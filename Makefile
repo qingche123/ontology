@@ -7,7 +7,7 @@ BUILD_NODECTL_PAR = -ldflags "-X main.Version=$(VERSION)"
 
 all:
 	$(GC)  $(BUILD_NODE_PAR) -o ontology main.go
-	$(GC)  $(BUILD_NODECTL_PAR) nodectl.go
+	# $(GC)  $(BUILD_NODECTL_PAR) nodectl.go
 
 format:
 	$(GOFMT) -w main.go

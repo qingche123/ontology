@@ -83,6 +83,7 @@ func setupAPP() *cli.App {
 		cmd.AssetCommand,
 		cmd.SettingCommand,
 		cmd.ContractCommand,
+		cmd.ConsoleCommand,
 	}
 	startFlags := []cli.Flag{
 		utils.WalletUsedFlag,
