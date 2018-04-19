@@ -56,11 +56,38 @@ func NewProcess(cons *Console) *Process{
 }
 
 func collectKeyWords(cons *Console){
+	sdkType := reflect.TypeOf(cons.OntSDK)
+	sdkMethodNum := sdkType.NumMethod()
+	for i := 0; i < sdkMethodNum ; i++ {
+		keyWords = append(keyWords, "wallet." + sdkType.Method(i).Name)
+	}
 
+	rpcClt :=  rpc.NewRpcClient(common.CRYPTO_SCHEME_DEFAULT)
+	rpcType := reflect.TypeOf(rpcClt)
+	rpcMethodNum := rpcType.NumMethod()
+	for i := 0; i < rpcMethodNum ; i++ {
+		keyWords = append(keyWords, "rpc." + rpcType.Method(i).Name)
+	}
+
+	ontWallet := &wallet.OntWallet{}
+	ontWalletType := reflect.TypeOf(ontWallet)
+	ontWalletMethodNum := ontWalletType.NumMethod()
+	for i := 0; i < ontWalletMethodNum ; i++ {
+		keyWords = append(keyWords, "wallet." + ontWalletType.Method(i).Name)
+	}
+
+	keyWords = append(keyWords, "wallet")
+	keyWords = append(keyWords, "rpc")
+	keyWords = append(keyWords, "contract")
 }
 
 func CompleteKeywords(line string) []string {
 	var rightKeyWords []string
-
+	for i := 0; i < len(keyWords); i++  {
+		b := strings.HasPrefix(keyWords[i], line)
+		if b {
+			rightKeyWords = append(rightKeyWords, keyWords[i])
+		}
+	}
 	return rightKeyWords
 }
