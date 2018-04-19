@@ -37,8 +37,24 @@ func Call(statement string, cons *Console) error {
 	process.Cons = cons
 
 	sm := strings.Split(statement, ".")
-	if true {
-		// todo
+	if strings.Contains(sm[1], "CreateWallet"){
+		err = process.CreateWallet()
+	} else if strings.Contains(sm[1], "OpenWallet") {
+		err = process.OpenWallet()
+	} else if strings.Contains(sm[1], "OpenOrCreateWallet") {
+		err = process.OpenOrCreateWallet()
+	} else if strings.Contains(sm[1], "GetCryptScheme") {
+		err = process.GetCryptScheme()
+	} else if strings.Contains(sm[1], "SetCryptScheme") {
+		err = process.SetCryptScheme()
+	} else if strings.Contains(sm[1], "GetDefaultAccount") {
+		err = process.GetDefaultAccount()
+	} else if strings.Contains(sm[1], "ChangePassword") {
+		err = process.ChangePassword()
+	} else if strings.Contains(sm[1], "CreateAccount") {
+		err = process.CreateAccount()
+	} else if strings.Contains(sm[1], "GetBalance") {
+		err = process.GetBalance()
 	} else {
 		fmt.Println("Unknown statement: ", sm[0], " ", sm[1])
 		err = errors.New(fmt.Sprint("Unknown statement: ", sm[0], " ", sm[1]))
@@ -90,4 +106,192 @@ func CompleteKeywords(line string) []string {
 		}
 	}
 	return rightKeyWords
+}
+
+func (s *Process) CreateWallet() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		return err
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		return err
+	}
+	confirm, err := s.Cons.prompter.PromptPassword("Repeat Password: ")
+	if err != nil {
+		return err
+	}
+	if password != confirm {
+		err = errors.New("Password don't match! ")
+		return err
+	}
+	_, err = s.Cons.OntSDK.CreateWallet(walletName, password)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return err
+}
+
+func (s *Process) OpenWallet() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		return err
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		return err
+	}
+	_, err = s.Cons.OntSDK.OpenWallet(walletName, password)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	return err
+}
+
+func (s *Process) OpenOrCreateWallet() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		return err
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		return err
+	}
+	_, err = s.Cons.OntSDK.OpenOrCreateWallet(walletName, password)
+	if err != nil {
+		fmt.Fprintln(s.Cons.printer, err.Error())
+	}
+	return err
+}
+
+func (s *Process)  GetCryptScheme() error {
+	cryptScheme := s.Cons.OntSDK.GetCryptScheme()
+	fmt.Fprintln(s.Cons.printer, "\n\tCryptScheme: " + cryptScheme + "\n")
+	return nil
+}
+
+func (s *Process) SetCryptScheme() error {
+	s.Cons.OntSDK.SetCryptScheme(common.CRYPTO_SCHEME_DEFAULT)
+	cryptScheme := s.Cons.OntSDK.GetCryptScheme()
+	if 0 == strings.Compare(cryptScheme, common.CRYPTO_SCHEME_DEFAULT) {
+		fmt.Fprintln(s.Cons.printer, "\tSetCryptScheme success!")
+	}
+	return nil
+}
+
+func (s *Process) GetDefaultAccount() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		return err
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		return err
+	}
+	ontWallet, err := s.Cons.OntSDK.OpenWallet(walletName, password)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defAccount, err := ontWallet.GetDefaultAccount()
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintln(s.Cons.printer, "Address: ", defAccount.Address)
+	fmt.Fprintln(s.Cons.printer, "PublicKey: ", defAccount.PublicKey)
+	fmt.Fprintln(s.Cons.printer, "SigScheme: ",  defAccount.SigScheme)
+	fmt.Fprintln(s.Cons.printer, "PrivateKey: ",  defAccount.PrivateKey)
+
+	return err
+}
+
+func (s *Process) ChangePassword() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		return err
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		return err
+	}
+	ontWallet, err := s.Cons.OntSDK.OpenWallet(walletName, password)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	newPassword, err := s.Cons.prompter.PromptPassword("New Password: ")
+	if err != nil {
+		return err
+	}
+	confirm, err := s.Cons.prompter.PromptPassword("Repeat New Password: ")
+	if err != nil {
+		return err
+	}
+	if password != confirm {
+		err = errors.New("Password don't match! ")
+		return err
+	}
+	err = ontWallet.ChangePassword(password, newPassword)
+	return err
+}
+
+func (s *Process) CreateAccount() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		return err
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		return err
+	}
+	ontWallet, err := s.Cons.OntSDK.OpenWallet(walletName, password)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	account, err := ontWallet.CreateAccount()
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	fmt.Fprintln(s.Cons.printer, "Address: ", account.Address)
+	fmt.Fprintln(s.Cons.printer, "PublicKey: ", account.PublicKey)
+	fmt.Fprintln(s.Cons.printer, "SigScheme: ",  account.SigScheme)
+	fmt.Fprintln(s.Cons.printer, "PrivateKey: ",  account.PrivateKey)
+
+	return err
+}
+
+func (s *Process) GetBalance() error {
+	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	if walletName == "" {
+		walletName = "wallet.dat"
+	}
+	password, err := s.Cons.prompter.PromptPassword("Password: ")
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	ontWallet, err := s.Cons.OntSDK.OpenWallet(walletName, password)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	defAccount, err := ontWallet.GetDefaultAccount()
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	balance, err := s.Cons.OntSDK.Rpc.GetBalance(defAccount.Address)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	fmt.Printf("ONT: %d; ONG: %d; ONGAppove: %d\n", balance.Ont.Int64(), balance.Ong.Int64(), balance.OngAppove.Int64())
+	return nil
 }
