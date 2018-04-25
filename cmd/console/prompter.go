@@ -173,3 +173,4 @@ func (p *terminalPrompter) ClearHistory() {
 func (p *terminalPrompter) SetWordCompleter(completer WordCompleter) {
 	p.State.SetWordCompleter(liner.WordCompleter(completer))
 }
+

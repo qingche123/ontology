@@ -36,7 +36,7 @@ import (
 	"github.com/ontio/ontology-go-sdk/rpc"
 	"github.com/ontio/ontology-go-sdk/wallet"
 	"github.com/ontio/ontology-go-sdk/common"
-	sctypes "github.com/ontio/ontology/smartcontract/types"
+	scTypes "github.com/ontio/ontology/smartcontract/types"
 	comm "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/core/payload"
 	"github.com/ontio/ontology/smartcontract/service/wasmvm"
@@ -46,46 +46,23 @@ var process * Process
 var keyWords []string
 
 func Call(statement string, cons *Console) error {
-	var err error
 	process.Cons = cons
 
 	sm := strings.Split(statement, ".")
-	if strings.Contains(sm[1], "CreateWallet"){
-		err = process.CreateWallet()
-	} else if strings.Contains(sm[1], "OpenWallet") {
-		err = process.OpenWallet()
-	} else if strings.Contains(sm[1], "OpenOrCreateWallet") {
-		err = process.OpenOrCreateWallet()
-	} else if strings.Contains(sm[1], "GetCryptScheme") {
-		err = process.GetCryptScheme()
-	} else if strings.Contains(sm[1], "SetCryptScheme") {
-		err = process.SetCryptScheme()
-	} else if strings.Contains(sm[1], "GetDefaultAccount") {
-		err = process.GetDefaultAccount()
-	} else if strings.Contains(sm[1], "ChangePassword") {
-		err = process.ChangePassword()
-	} else if strings.Contains(sm[1], "CreateAccount") {
-		err = process.CreateAccount()
-	} else if strings.Contains(sm[1], "GetBalance") {
-		err = process.GetBalance()
-	} else if strings.Contains(sm[1], "DeploySmartContract") {
-		err = process.DeploySmartContract()
-	} else if strings.Contains(sm[1], "GetBalanceWithBase58") {
-		err = process.GetBalanceWithBase58()
+	tmp := sm[1]
+	command := tmp[:len(tmp)-1]
+
+	mtV := reflect.ValueOf(&process).Elem()
+
+	method := mtV.MethodByName(command)
+	if ! method.IsNil(){
+		method.Call(nil)
 	} else {
-		fmt.Println("Unknown statement: ", sm[0], " ", sm[1])
-		err = errors.New(fmt.Sprint("Unknown statement: ", sm[0], " ", sm[1]))
+		fmt.Println("Cann't find the method")
+		return errors.New("Cann't find the method ")
 	}
-	return err
-}
 
-type Process struct {
-	Cons *Console
-}
-
-func NewProcess(cons *Console) *Process{
-	collectKeyWords(cons)
-	return &Process{Cons:cons}
+	return nil
 }
 
 func collectKeyWords(cons *Console){
@@ -123,6 +100,15 @@ func CompleteKeywords(line string) []string {
 		}
 	}
 	return rightKeyWords
+}
+
+type Process struct {
+	Cons *Console
+}
+
+func NewProcess(cons *Console) *Process{
+	collectKeyWords(cons)
+	return &Process{Cons:cons}
 }
 
 func (s *Process) CreateWallet() error {
@@ -259,7 +245,7 @@ func (s *Process) GetDefaultAccount() error {
 
 	return err
 }
-
+/*
 func (s *Process) ChangePassword() error {
 	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
 	if err != nil {
@@ -291,7 +277,9 @@ func (s *Process) ChangePassword() error {
 	err = ontWallet.ChangePassword(password, newPassword)
 	return err
 }
+*/
 
+/*
 func (s *Process) CreateAccount() error {
 	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
 	if err != nil {
@@ -322,7 +310,7 @@ func (s *Process) CreateAccount() error {
 
 	return err
 }
-
+*/
 func (s *Process) GetBalance() error {
 	walletName, err := s.Cons.prompter.PromptInput("Wallet Name: ")
 	if err != nil {
@@ -384,7 +372,7 @@ func (s *Process) DeploySmartContract() error {
 		return err
 	}
 
-	var vmType sctypes.VmType
+	var vmType scTypes.VmType
 	var tmp int
 
 VMTYPE:
@@ -400,11 +388,11 @@ VMTYPE:
 	tmp, _ = strconv.Atoi(vmTypeStr)
 	switch tmp {
 	case 1:
-		vmType = sctypes.Native
+		vmType = scTypes.Native
 	case 2:
-		vmType = sctypes.NEOVM
+		vmType = scTypes.NEOVM
 	case 3:
-		vmType = sctypes.WASMVM
+		vmType = scTypes.WASMVM
 	default:
 		goto VMTYPE
 	}
@@ -1107,13 +1095,13 @@ func (s *Process)WaitForGenerateBlock() error {
 	pro := s.Cons.prompter
 	heightStr, err := pro.PromptInput("Input the block height: ")
 	if err != nil {
-		fmt.Println("addr:", err.Error())
+		fmt.Println(err.Error())
 		return nil
 	}
 	height, _ := strconv.Atoi(heightStr)
-	timeStr, err := pro.PromptInput("Input the block height: ")
+	timeStr, err := pro.PromptInput("Input the time duration: ")
 	if err != nil {
-		fmt.Println("addr:", err.Error())
+		fmt.Println(err.Error())
 		return nil
 	}
 	timeDur, _ := strconv.Atoi(timeStr)
@@ -1169,4 +1157,5 @@ func echoInvGracefully(inv interface{}) {
 		fmt.Println("Gracefully format json err: %s", err.Error())
 	}
 	out.WriteTo(os.Stdout)
+	fmt.Println()
 }

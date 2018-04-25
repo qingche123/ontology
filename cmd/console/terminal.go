@@ -116,7 +116,8 @@ func (c *Console) AutoCompleteInput(line string, pos int) (string, []string, str
 func (c *Console) Welcome() {
 	welcome := "\n    Welcome to the Ontology terminal! If you want to leave it, Please enter <exit>.\n\n" +
 				"    Modules:\n\n" +
-				"    [wallet]    [rpc]   [contract]\n "
+				"    [wallet]    [rpc]\n\n" +
+				"    Tips: Please enter \"wallet. + [TAB]\" or \"rpc. + [TAB]\" to look for the functions.\n"
 	fmt.Fprintln(c.printer, welcome)
 }
 
