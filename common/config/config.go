@@ -145,6 +145,9 @@ type P2PNodeConfig struct {
 	CAPath            string
 	HttpInfoPort      uint
 	MaxHdrSyncReqs    uint
+	DefaultMaxPeers   uint32
+	GetAddrMax        uint32
+	MaxOutboundCnt    uint32
 }
 
 type RpcConfig struct {

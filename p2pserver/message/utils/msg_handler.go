@@ -50,7 +50,7 @@ func AddrReqHandle(data *msgCommon.MsgPayload, p2p p2p.P2P, pid *evtActor.PID, a
 	}
 
 	var addrStr []msgCommon.PeerAddr
-	addrStr = p2p.GetNeighborAddrs()
+	addrStr = p2p.RandSelectAddresses()
 	buf, err := msgpack.NewAddrs(addrStr)
 	if err != nil {
 		return err
@@ -358,6 +358,24 @@ func VersionHandle(data *msgCommon.MsgPayload, p2p p2p.P2P, pid *evtActor.PID, a
 			pid.Tell(input)
 		}
 
+		i := strings.Index(data.Addr, ":")
+		if i < 0 {
+			log.Warn("Split IP address error")
+		}
+		ipStr := data.Addr[:i]
+		ip := net.ParseIP(ipStr).To16()
+		var result [16]byte
+		copy(result[:], ip[:16])
+		addr := msgCommon.PeerAddr{
+			Time:          time.Now().UTC().UnixNano(),
+			Services:      version.P.Services,
+			IpAddr:        result,
+			Port:          version.P.SyncPort,
+			ConsensusPort: version.P.ConsPort,
+			ID:            version.P.Nonce,
+		}
+		p2p.AddAddressToKnownAddress(addr)
+
 		var buf []byte
 		if s == msgCommon.INIT {
 			remotePeer.SetSyncState(msgCommon.HAND_SHAKE)
@@ -490,6 +508,8 @@ func AddrHandle(data *msgCommon.MsgPayload, p2p p2p.P2P, pid *evtActor.PID, args
 		}
 		log.Info("Connect ipaddr ：", address)
 		go p2p.Connect(address, false)
+		//save the node address in address list
+		p2p.AddAddressToKnownAddress(v)
 	}
 	return nil
 }

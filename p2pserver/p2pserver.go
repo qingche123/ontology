@@ -55,6 +55,12 @@ type P2PServer struct {
 	ReconnectAddrs
 	quitOnline    chan bool
 	quitHeartBeat chan bool
+	flightHeights   map[uint64][]uint32
+	quitSyncBlk     chan bool
+	isSync          bool
+	MaxOutboundCnt  uint32
+	DefaultMaxPeers uint32
+	GetAddrMax      uint32
 }
 
 //ReconnectAddrs contain addr need to reconnect
@@ -95,7 +101,9 @@ func (this *P2PServer) Start() error {
 	go this.keepOnlineService()
 	go this.heartBeatService()
 	go this.blockSync.Start()
-
+	this.SetMaxOutboundCnt()
+	this.SetDefaultMaxPeers()
+	this.SetGetAddrMax()
 	return nil
 }
 
@@ -326,6 +334,22 @@ func (this *P2PServer) connectSeeds() {
 	}
 }
 
+func (this *P2PServer) ConnectNode() {
+	cntcount := this.network.GetConnectionCnt()
+	if cntcount < this.GetMaxOutboundCnt() {
+		nbrAddr := this.network.GetNeighborAddrs()
+		addrs := this.network.RandGetAddresses(nbrAddr)
+		for _, nodeAddr := range addrs {
+			addr := nodeAddr.IpAddr
+			port := nodeAddr.Port
+			var ip net.IP
+			ip = addr[:]
+			na := ip.To16().String() + ":" + strconv.Itoa(int(port))
+			go this.network.Connect(na, false)
+		}
+	}
+}
+
 //reachMinConnection return whether net layer have enough link under different config
 func (this *P2PServer) reachMinConnection() bool {
 	consensusType := strings.ToLower(config.DefConfig.Genesis.ConsensusType)
@@ -408,6 +432,7 @@ func (this *P2PServer) keepOnlineService() {
 		select {
 		case <-t.C:
 			this.connectSeeds()
+			this.ConnectNode()
 			this.retryInactivePeer()
 			t.Stop()
 			t.Reset(time.Second * common.CONN_MONITOR)
@@ -499,4 +524,40 @@ func (this *P2PServer) removeFromRetryList(addr string) {
 			delete(this.RetryAddrs, addr)
 		}
 	}
+}
+
+func (this *P2PServer) SetMaxOutboundCnt() {
+	if (config.DefConfig.P2PNode.MaxOutboundCnt < common.MAXOUTBOUNDCNT) && (config.DefConfig.P2PNode.MaxOutboundCnt > 0) {
+		this.MaxOutboundCnt = config.DefConfig.P2PNode.MaxOutboundCnt
+	} else {
+		this.MaxOutboundCnt = common.MAXOUTBOUNDCNT
+	}
+}
+
+func (this *P2PServer) SetGetAddrMax() {
+	if (config.DefConfig.P2PNode.GetAddrMax < common.GETADDRMAX) && (config.DefConfig.P2PNode.GetAddrMax > 0) {
+		this.GetAddrMax = config.DefConfig.P2PNode.GetAddrMax
+	} else {
+		this.GetAddrMax = common.GETADDRMAX
+	}
+}
+
+func (this *P2PServer) SetDefaultMaxPeers() {
+	if (config.DefConfig.P2PNode.DefaultMaxPeers < common.DEFAULTMAXPEERS) && (config.DefConfig.P2PNode.DefaultMaxPeers > 0) {
+		this.DefaultMaxPeers = config.DefConfig.P2PNode.MaxOutboundCnt
+	} else {
+		this.DefaultMaxPeers = common.DEFAULTMAXPEERS
+	}
+}
+
+func (this *P2PServer) GetGetAddrMax() uint32 {
+	return this.GetAddrMax
+}
+
+func (this *P2PServer) GetMaxOutboundCnt() uint32 {
+	return this.MaxOutboundCnt
+}
+
+func (this *P2PServer) GetDefaultMaxPeers() uint32 {
+	return this.DefaultMaxPeers
 }
