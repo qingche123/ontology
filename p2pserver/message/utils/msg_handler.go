@@ -464,8 +464,10 @@ func VerAckHandle(data *msgCommon.MsgPayload, p2p p2p.P2P, pid *evtActor.PID, ar
 
 		}
 
-		buf, _ := msgpack.NewAddrReq()
-		go p2p.Send(remotePeer, buf, false)
+		if p2p.NeedMoreAddresses() {
+			buf, _ := msgpack.NewAddrReq()
+			go p2p.Send(remotePeer, buf, false)
+		}
 
 		p2p.RemoveFromConnectingList(addr)
 

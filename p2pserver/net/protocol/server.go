@@ -64,4 +64,5 @@ type P2P interface {
 	RandGetAddresses(nbrAddrs []common.PeerAddr) []common.PeerAddr
 	RandSelectAddresses() []common.PeerAddr
 	AddAddressToKnownAddress(p common.PeerAddr)
+	NeedMoreAddresses() bool
 }
