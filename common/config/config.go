@@ -55,6 +55,7 @@ const (
 	DEFAULT_RPC_LOCAL_PORT                  = uint(20337)
 	DEFAULT_REST_PORT                       = uint(20334)
 	DEFAULT_WS_PORT                         = uint(20335)
+	DEFAULT_STORAGE_URL                     = string("localhost:5001")
 	DEFAULT_MAX_CONN_IN_BOUND               = uint(1024)
 	DEFAULT_MAX_CONN_OUT_BOUND              = uint(1024)
 	DEFAULT_MAX_CONN_IN_BOUND_FOR_SINGLE_IP = uint(16)
@@ -527,6 +528,11 @@ type WebSocketConfig struct {
 	HttpKeyPath  string
 }
 
+type StorageConfig struct {
+	EnableStorage  bool
+	Url            string
+}
+
 type OntologyConfig struct {
 	Genesis   *GenesisConfig
 	Common    *CommonConfig
@@ -535,6 +541,7 @@ type OntologyConfig struct {
 	Rpc       *RpcConfig
 	Restful   *RestfulConfig
 	Ws        *WebSocketConfig
+	Storage   *StorageConfig
 }
 
 func NewOntologyConfig() *OntologyConfig {
@@ -582,6 +589,10 @@ func NewOntologyConfig() *OntologyConfig {
 		Ws: &WebSocketConfig{
 			EnableHttpWs: true,
 			HttpWsPort:   DEFAULT_WS_PORT,
+		},
+		Storage: &StorageConfig{
+			EnableStorage: false,
+			Url:           "",
 		},
 	}
 }

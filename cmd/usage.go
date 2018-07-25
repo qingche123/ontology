@@ -164,6 +164,13 @@ var AppHelpFlagGroups = []flagGroup{
 		},
 	},
 	{
+		Name: "STORAGE",
+		Flags: []cli.Flag{
+			utils.StorageEnabledFlag,
+			utils.StorageUrlFlag,
+		},
+	},
+	{
 		Name: "TEST MODE",
 		Flags: []cli.Flag{
 			utils.EnableTestModeFlag,

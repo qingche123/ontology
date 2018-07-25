@@ -40,6 +40,7 @@ func SetOntologyConfig(ctx *cli.Context) (*config.OntologyConfig, error) {
 	setRpcConfig(ctx, cfg.Rpc)
 	setRestfulConfig(ctx, cfg.Restful)
 	setWebSocketConfig(ctx, cfg.Ws)
+	SetStorageConfig(ctx, cfg.Storage)
 	if cfg.Genesis.ConsensusType == config.CONSENSUS_TYPE_SOLO {
 		cfg.Ws.EnableHttpWs = true
 		cfg.Restful.EnableHttpRestful = true
@@ -187,5 +188,12 @@ func setWebSocketConfig(ctx *cli.Context, cfg *config.WebSocketConfig) {
 func SetRpcPort(ctx *cli.Context) {
 	if ctx.IsSet(utils.GetFlagName(utils.RPCPortFlag)) {
 		config.DefConfig.Rpc.HttpJsonPort = ctx.Uint(utils.GetFlagName(utils.RPCPortFlag))
+	}
+}
+
+func SetStorageConfig(ctx *cli.Context, cfg *config.StorageConfig) {
+	if ctx.IsSet(utils.GetFlagName(utils.StorageEnabledFlag)) {
+		cfg.EnableStorage = ctx.GlobalBool(utils.GetFlagName(utils.StorageEnabledFlag))
+		cfg.Url = ctx.GlobalString(utils.GetFlagName(utils.StorageUrlFlag))
 	}
 }

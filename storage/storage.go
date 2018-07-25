@@ -14,16 +14,17 @@ const (
 
 type StorageContext struct {
 	Sh *storageSdk.Shell
+	Url string
 }
 
-func NewStorageService() *StorageContext {
-	return &StorageContext{Sh:nil}
+func NewStorageService(url string) *StorageContext {
+	return &StorageContext{Sh:nil, Url:url}
 }
 
 func (sc *StorageContext)StartStoreService() error {
-	sc.Sh = storageSdk.NewShell("localhost:5001")
-	if sc.Sh == nil {
-		return errors.New("storage service start failed")
+	sc.Sh = storageSdk.NewShell(sc.Url)
+	if !sc.Sh.IsUp() {
+		return errors.New("storage service start failed, connection error")
 	}
 	return nil
 }
@@ -36,11 +37,10 @@ func (sc *StorageContext)GetAndDecrypt(hash string, password string) ([]byte, er
 	return sc.Sh.GetAndDecrypt(hash, password)
 }
 
-
-func (sc *StorageContext)Add(data []byte) (string, error) {
-	return sc.Sh.Add(data)
+func (sc *StorageContext)AddData(data []byte) (string, error) {
+	return sc.Sh.AddData(data)
 }
 
-func (sc *StorageContext)Get(hash string) ([]byte, error) {
-	return sc.Sh.Get(hash)
+func (sc *StorageContext)GetData(hash string) ([]byte, error) {
+	return sc.Sh.GetData(hash)
 }

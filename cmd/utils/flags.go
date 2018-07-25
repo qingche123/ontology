@@ -193,6 +193,17 @@ var (
 		Value: config.DEFAULT_REST_PORT,
 	}
 
+	//Storage setting
+	StorageEnabledFlag= cli.BoolFlag{
+		Name:  "storage",
+		Usage: "Enable storage module",
+	}
+	StorageUrlFlag = cli.StringFlag{
+		Name:  "storageurl",
+		Usage: "Storage service url",
+		Value: config.DEFAULT_STORAGE_URL,
+	}
+
 	//Account setting
 	AccountPassFlag = cli.StringFlag{
 		Name:   "password,p",

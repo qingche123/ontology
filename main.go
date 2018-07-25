@@ -58,6 +58,7 @@ import (
 	"github.com/ontio/ontology/validator/stateful"
 	"github.com/ontio/ontology/validator/stateless"
 	"github.com/urfave/cli"
+	"github.com/ontio/ontology/storage"
 )
 
 func setupAPP() *cli.App {
@@ -119,6 +120,9 @@ func setupAPP() *cli.App {
 		//ws setting
 		utils.WsEnabledFlag,
 		utils.WsPortFlag,
+		//storage setting
+		utils.StorageEnabledFlag,
+		utils.StorageUrlFlag,
 	}
 	app.Before = func(context *cli.Context) error {
 		runtime.GOMAXPROCS(runtime.NumCPU())
@@ -186,6 +190,7 @@ func startOntology(ctx *cli.Context) {
 	initRestful(ctx)
 	initWs(ctx)
 	initNodeInfo(ctx, p2pSvr)
+	initStorage(ctx)
 
 	go logCurrBlockHeight()
 	waitToExit()
@@ -410,6 +415,19 @@ func initNodeInfo(ctx *cli.Context, p2pSvr *p2pserver.P2PServer) {
 	log.Infof("Nodeinfo init success")
 }
 
+func initStorage(ctx *cli.Context) {
+	if !config.DefConfig.Storage.EnableStorage {
+		return
+	}
+
+	nss := storage.NewStorageService(config.DefConfig.Storage.Url)
+	err := nss.StartStoreService()
+	if err != nil {
+		log.Infof("StoreService init failed: %s", err.Error())
+		return
+	}
+	log.Infof("StorageService init success")
+}
 func importBlocks(ctx *cli.Context) error {
 	if !ctx.GlobalBool(utils.GetFlagName(utils.ImportEnableFlag)) {
 		return nil
