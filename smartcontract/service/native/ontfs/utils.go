@@ -16,35 +16,33 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package common
+package ontfs
 
 import (
-	"bytes"
-	"crypto/rand"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/ontio/ontology/common"
 )
 
+const (
+	FS_SET = "FsSet"
+	FS_SET_INIT = "FsSettingInit"
+	FS_GETSETTING = "FsGetSetting"
+	FS_NODE_REGISTER = "FsNodeRegister"
+	FS_NODE_QUERY = "FsNodeQuery"
+	FS_NODE_UPDATE = "FsNodeUpdate"
+	FS_NODE_CANCEL = "FsNodeCancel"
+)
 
+const (
+	ONTFS_NODE_INFO   = "ontfsnodeInfo"
+	ONTFS_SETTING     = "ontfssetting"
 
-func TestAddressParseFromBytes(t *testing.T) {
-	var addr Address
-	rand.Read(addr[:])
+)
 
-	addr2, _ := AddressParseFromBytes(addr[:])
-
-	assert.Equal(t, addr, addr2)
+func GenFsNodeInfoKey(contract common.Address, walletAddr common.Address) []byte {
+	key := append(contract[:], ONTFS_NODE_INFO...)
+	return append(key, walletAddr[:]...)
 }
 
-func TestAddress_Serialize(t *testing.T) {
-	var addr Address
-	rand.Read(addr[:])
-
-	buf := bytes.NewBuffer(nil)
-	addr.Serialize(buf)
-
-	var addr2 Address
-	addr2.Deserialize(buf)
-	assert.Equal(t, addr, addr2)
+func GenFsSettingKey(contract common.Address) []byte {
+	return append(contract[:], ONTFS_SETTING...)
 }

@@ -88,3 +88,7 @@ func GenUInt32StorageItem(value uint32) *cstates.StorageItem {
 func PutBytes(native *native.NativeService, key []byte, value []byte) {
 	native.CloneCache.Add(scommon.ST_STORAGE, key, &cstates.StorageItem{Value: value})
 }
+
+func DelStorageItem(native *native.NativeService, key []byte){
+	native.CloneCache.Delete(scommon.ST_STORAGE, key)
+}
