@@ -61,6 +61,7 @@ func FsSet(native *native.NativeService) ([]byte, error) {
 	if err := fsSetting.Deserialization(infoSource); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsSetting deserialize error!")
 	}
+
 	setFsSetting(native, fsSetting)
 	return utils.BYTE_TRUE, nil
 }
@@ -68,7 +69,7 @@ func FsSet(native *native.NativeService) ([]byte, error) {
 func FsGetSetting(native *native.NativeService) ([]byte, error) {
 	fmt.Println("===FsGetSetting===")
 	fsSetting, err := getFsSetting(native)
-	if err != nil {
+	if err != nil || fsSetting == nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
 	}
 	fs := new(bytes.Buffer)
@@ -81,7 +82,7 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	fsSetting, err := getFsSetting(native)
-	if err != nil {
+	if err != nil || fsSetting == nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
 	}
 
@@ -152,7 +153,7 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	fsSetting, err := getFsSetting(native)
-	if err != nil {
+	if err != nil || fsSetting == nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
 	}
 
@@ -244,22 +245,24 @@ func FsNodeCancel(native *native.NativeService) ([]byte, error) {
 	return utils.BYTE_TRUE, nil
 }
 
-func getFsSetting(native *native.NativeService) (FsSetting, error){
+func getFsSetting(native *native.NativeService) (*FsSetting, error){
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	var fsSetting FsSetting
 	fsSettingKey := GenFsSettingKey(contract)
 
 	item, err := utils.GetStorageItem(native, fsSettingKey)
-	if err != nil || item == nil {
-		return FsSetting{}, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
 	}
-
+	if item == nil {
+		return nil, fmt.Errorf("[FS Govern] Not found fsSetting")
+	}
 	settingSource := common.NewZeroCopySource(item.Value)
 	if err := fsSetting.Deserialization(settingSource); err != nil {
-		return FsSetting{}, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsSetting Deserialization error!")
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsSetting Deserialization error!")
 	}
-	return fsSetting, nil
+	return &fsSetting, nil
 }
 
 func setFsSetting(native *native.NativeService, fsSetting FsSetting) {
@@ -271,7 +274,6 @@ func setFsSetting(native *native.NativeService, fsSetting FsSetting) {
 	fsSettingKey := GenFsSettingKey(contract)
 	utils.PutBytes(native, fsSettingKey, info.Bytes())
 }
-
 
 func appCallTransfer(native *native.NativeService, contract common.Address, from common.Address, to common.Address, amount uint64) error {
 	var sts []ont.State
