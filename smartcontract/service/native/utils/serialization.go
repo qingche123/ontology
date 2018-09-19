@@ -96,3 +96,34 @@ func DecodeAddress(source *common.ZeroCopySource) (common.Address, error) {
 
 	return common.AddressParseFromBytes(from)
 }
+
+func WriteBytes(w io.Writer, b []byte) error {
+	if err := serialization.WriteVarBytes(w, b[:]); err != nil {
+		return fmt.Errorf("serialize value error:%v", err)
+	}
+	return nil
+}
+
+func ReadBytes(r io.Reader) ([]byte, error) {
+	from, err := serialization.ReadVarBytes(r)
+	if err != nil {
+		return nil, fmt.Errorf("[State] deserialize from error:%v", err)
+	}
+	return from, nil
+}
+
+func EncodeBytes(sink *common.ZeroCopySink, b []byte) (size uint64) {
+	return sink.WriteVarBytes(b[:])
+}
+
+func DecodeBytes(source *common.ZeroCopySource) ([]byte, error) {
+	from, _, irregular, eof := source.NextVarBytes()
+	if eof {
+		return nil, io.ErrUnexpectedEOF
+	}
+	if irregular {
+		return nil, common.ErrIrregularData
+	}
+
+	return from, nil
+}

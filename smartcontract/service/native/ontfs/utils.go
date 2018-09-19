@@ -23,26 +23,32 @@ import (
 )
 
 const (
-	FS_SET = "FsSet"
-	FS_SET_INIT = "FsSettingInit"
-	FS_GETSETTING = "FsGetSetting"
-	FS_NODE_REGISTER = "FsNodeRegister"
-	FS_NODE_QUERY = "FsNodeQuery"
-	FS_NODE_UPDATE = "FsNodeUpdate"
-	FS_NODE_CANCEL = "FsNodeCancel"
+	FS_SET              = "FsSet"
+	FS_SET_INIT         = "FsSettingInit"
+	FS_GETSETTING       = "FsGetSetting"
+	FS_NODE_REGISTER    = "FsNodeRegister"
+	FS_NODE_QUERY       = "FsNodeQuery"
+	FS_NODE_UPDATE      = "FsNodeUpdate"
+	FS_NODE_CANCEL      = "FsNodeCancel"
+	FS_GET_NODE_LIST    = "FsGetNodeList"
+	FS_STORE_FILE       = "FsStoreFile"
 )
 
 const (
-	ONTFS_NODE_INFO   = "ontfsnodeInfo"
 	ONTFS_SETTING     = "ontfssetting"
-
+	ONTFS_NODE_INFO   = "ontfsnodeInfo"
+	ONTFS_NODE_SET   = "ontfsnodeset"
 )
+
+func GenFsSettingKey(contract common.Address) []byte {
+	return append(contract[:], ONTFS_SETTING...)
+}
 
 func GenFsNodeInfoKey(contract common.Address, walletAddr common.Address) []byte {
 	key := append(contract[:], ONTFS_NODE_INFO...)
 	return append(key, walletAddr[:]...)
 }
 
-func GenFsSettingKey(contract common.Address) []byte {
-	return append(contract[:], ONTFS_SETTING...)
+func GenFsNodeSetKey(contract common.Address) []byte {
+	return append(contract[:], ONTFS_NODE_SET...)
 }

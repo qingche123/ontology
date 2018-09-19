@@ -23,22 +23,18 @@ import (
 
 	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/smartcontract/service/native/utils"
-	"github.com/ontio/ontology/common/serialization"
 )
 
-// Transfers
+type FsNodeInfos struct {
+	Item []FsNodeInfo `json:fsNodeInfo`
+}
+
 type FsNodeInfo struct {
 	Pledge      uint64
 	Volume      uint64
 	ServiceTime uint64
 	WalletAddr  common.Address
 	NodeAddr    []byte
-}
-
-type FsSetting struct {
-	FsGasPrice       uint64
-	GasPerKBForStore uint64
-	GasPerKBForRead  uint64
 }
 
 func (this *FsNodeInfo) Serialize(w io.Writer) error {
@@ -54,7 +50,7 @@ func (this *FsNodeInfo) Serialize(w io.Writer) error {
 	if err := utils.WriteAddress(w, this.WalletAddr); err != nil {
 		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
 	}
-	if err := serialization.WriteVarBytes(w, this.NodeAddr); err != nil {
+	if err := utils.WriteBytes(w, this.NodeAddr); err != nil {
 		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
 	}
 	return nil
@@ -74,7 +70,7 @@ func (this *FsNodeInfo) Deserialize(r io.Reader) error {
 	if this.WalletAddr, err = utils.ReadAddress(r); err != nil {
 		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
 	}
-	if this.NodeAddr, err = serialization.ReadVarBytes(r); err != nil {
+	if this.NodeAddr, err = utils.ReadBytes(r); err != nil {
 		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
 	}
 	return nil
@@ -85,7 +81,7 @@ func (this *FsNodeInfo) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeVarUint(sink, this.Volume)
 	utils.EncodeVarUint(sink, this.ServiceTime)
 	utils.EncodeAddress(sink, this.WalletAddr)
-	sink.WriteVarBytes(this.NodeAddr)
+	utils.EncodeBytes(sink, this.NodeAddr)
 }
 
 func (this *FsNodeInfo) Deserialization(source *common.ZeroCopySource) error {
@@ -106,61 +102,9 @@ func (this *FsNodeInfo) Deserialization(source *common.ZeroCopySource) error {
 	if err != nil {
 		return err
 	}
-
-	from, _, irregular, eof := source.NextVarBytes()
-	if eof {
-		return io.ErrUnexpectedEOF
-	}
-	if irregular {
-		return common.ErrIrregularData
-	}
-	this.NodeAddr = from
-	return nil
-}
-
-func (this *FsSetting) Serialize(w io.Writer) error {
-	if err := utils.WriteVarUint(w, this.FsGasPrice); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
-	}
-	if err := utils.WriteVarUint(w, this.GasPerKBForStore); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
-	}
-	if err := utils.WriteVarUint(w, this.GasPerKBForRead); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
-	}
-	return nil
-}
-
-func (this *FsSetting) Deserialize(r io.Reader) error {
-	var err error
-	if this.FsGasPrice, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
-	}
-	if this.GasPerKBForStore, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
-	}
-	if this.GasPerKBForRead, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
-	}
-	return nil
-}
-
-func (this *FsSetting) Serialization(sink *common.ZeroCopySink) {
-	utils.EncodeVarUint(sink, this.FsGasPrice)
-	utils.EncodeVarUint(sink, this.GasPerKBForStore)
-	utils.EncodeVarUint(sink, this.GasPerKBForRead)
-}
-
-func (this *FsSetting) Deserialization(source *common.ZeroCopySource) error {
-	var err error
-	this.FsGasPrice, err = utils.DecodeVarUint(source)
+	this.NodeAddr, err = utils.DecodeBytes(source)
 	if err != nil {
 		return err
 	}
-	this.GasPerKBForStore, err = utils.DecodeVarUint(source)
-	if err != nil {
-		return err
-	}
-	this.GasPerKBForRead, err = utils.DecodeVarUint(source)
-	return err
+	return nil
 }
