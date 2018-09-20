@@ -45,6 +45,7 @@ func RegisterFsContract(native *native.NativeService) {
 	native.Register(FS_STORE_FILE, FsStoreFile)
 	native.Register(FS_GET_FILE_INFO, FsGetFileInfo)
 	native.Register(FS_NODE_WITH_DRAW_PROFIT, FsNodeWithDrawProfit)
+	native.Register(FS_FILE_PROVE, FsFileProve)
 }
 
 func FsSetInit(native *native.NativeService) ([]byte, error) {
@@ -122,6 +123,7 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	fsNodeInfo.Pledge = pledge
 	fsNodeInfo.Profit = 0
 	fsNodeInfo.RestVol = fsNodeInfo.Volume
+
 	info := new(bytes.Buffer)
 	err = fsNodeInfo.Serialize(info)
 	if err != nil {
@@ -267,8 +269,8 @@ func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeWithDrawProfit getFsNodeInfo error!")
 	}
 
-	var state ont.State
 	if fsNodeInfo.Profit > 0 {
+		state := ont.State{From:contract, To:fsNodeInfo.WalletAddr, Value:fsNodeInfo.Profit}
 		err = appCallTransfer(native, utils.OntContractAddress, contract, fsNodeInfo.WalletAddr, fsNodeInfo.Profit)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
@@ -290,11 +292,75 @@ func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
 }
 
 func FsFileProve(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeCancel===")
-	//contract := native.ContextRef.CurrentContext().ContractAddress
+	fmt.Println("===FsNodeProve===")
+	contract := native.ContextRef.CurrentContext().ContractAddress
 
+	var fileProve FileProve
+	source := common.NewZeroCopySource(native.Input)
+	if err := fileProve.Deserialization(source); err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve deserialize error!")
+	}
+	if native.ContextRef.CheckWitness(fileProve.WalletAddr) == false {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] CheckWitness failed!")
+	}
 
-	return nil, nil
+	fsSetting, err := getFsSetting(native)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve getFsSetting error!")
+	}
+
+	fileInfo, err := getFsFileInfo(native, fileProve.FileHash)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve getFsFileInfo error!")
+	}
+
+	//if fileInfo.ProveTimes == fileInfo.ChallengeTimes {
+	//	return utils.BYTE_FALSE, errors.NewErr("[FS Govern] File prove times has reached max challenge times!")
+	//}
+	//
+	//expireMinHeight := fileInfo.BlockHeight + fileInfo.ProveTimes * fileInfo.ChallengeRate
+	//expireMaxHeight := fileInfo.BlockHeight + (fileInfo.ProveTimes + 1) * fileInfo.ChallengeRate
+	//if uint64(native.Height) > expireMaxHeight ||  uint64(native.Height) < expireMinHeight{
+	//	//todo: how to process
+	//	return utils.BYTE_FALSE, errors.NewErr("[FS Govern] File prove times out of date!")
+	//}
+
+	header, err := native.Store.GetHeaderByHeight(uint32(fileProve.BlockHeight))
+	if err != nil {
+		return nil, err
+	}
+	_, err = GenChallenge(header.Hash(), fileInfo.FileBlockNum, fileInfo.ProveBlockNum)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve GenChallenge error!")
+	}
+
+	//---------------
+	//Verify  (challenge, fileProve.Prove, fileInfo.FileProveParam)
+	//---------------
+
+	//Store Prove Data ?
+	//---------------
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve Verify error!")
+	}
+
+	profit := (fsSetting.GasPerKBPerHourPreserve * fileInfo.ChallengeRate + fsSetting.GasForChallenge) * fsSetting.FsGasPrice
+	state := ont.State{From:contract, To:fileProve.WalletAddr, Value:profit}
+	err = appCallTransfer(native, utils.OntContractAddress, contract, fileProve.WalletAddr, profit)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve appCallTransferOnt, ont transfer error!")
+	}
+	ont.AddNotifications(native, contract, &state)
+
+	fileInfo.Deposit -= profit
+
+	bf := new(bytes.Buffer)
+	if err = fileInfo.Serialize(bf); err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileProve fileInfo serialize error!")
+	}
+	utils.PutBytes(native, fileInfo.FileHash[:], bf.Bytes())
+
+	return utils.BYTE_TRUE, nil
 }
 
 func getFsSetting(native *native.NativeService) (*FsSetting, error){

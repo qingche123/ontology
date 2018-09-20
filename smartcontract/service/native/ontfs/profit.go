@@ -92,11 +92,11 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile getFsSetting error!")
 	}
 
-	fileInfo.Pay = (fileInfo.FileBlockNum * fileInfo.FIleBlockSize * set.GasPerKBPerHourPreserve  +
+	fileInfo.Deposit = (fileInfo.FileBlockNum * fileInfo.FIleBlockSize * set.GasPerKBPerHourPreserve  +
 		fileInfo.ChallengeRate * fileInfo.ChallengeTimes * set.GasForChallenge) *
 		fileInfo.CopyNum * set.FsGasPrice
 
-	state := ont.State{From: fileInfo.UserAddr, To: contract, Value:fileInfo.Pay}
+	state := ont.State{From: fileInfo.UserAddr, To: contract, Value:fileInfo.Deposit}
 	if native.ContextRef.CheckWitness(state.From) == false {
 		return utils.BYTE_FALSE, errors.NewErr("FS Profit] CheckWitness failed!")
 	}
@@ -106,9 +106,12 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	}
 	ont.AddNotifications(native, contract, &state)
 
+	fileInfo.ProveBlockNum = 32
+	fileInfo.BlockHeight = uint64(native.Height)
+
 	bf := new(bytes.Buffer)
 	if err = fileInfo.Serialize(bf); err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] appCallTransferOnt, ont transfer error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile fileInfo serialize error!")
 	}
 	utils.PutBytes(native, fileInfo.FileHash[:], bf.Bytes())
 	return utils.BYTE_TRUE, nil

@@ -29,6 +29,7 @@ import (
 	"github.com/ontio/ontology/smartcontract/states"
 	sstates "github.com/ontio/ontology/smartcontract/states"
 	"github.com/ontio/ontology/smartcontract/storage"
+	"github.com/ontio/ontology/core/store"
 )
 
 type (
@@ -52,6 +53,7 @@ type NativeService struct {
 	Height        uint32
 	Time          uint32
 	ContextRef    context.ContextRef
+	Store         store.LedgerStore   // ledger store
 }
 
 func (this *NativeService) Register(methodName string, handler Handler) {

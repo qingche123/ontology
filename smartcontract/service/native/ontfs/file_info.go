@@ -34,8 +34,10 @@ type FileInfo struct {
 	ChallengeRate       uint64
 	ChallengeTimes      uint64
 	CopyNum             uint64
-	Pay                 uint64
+	Deposit             uint64
 	FileProveParam      []byte
+	ProveBlockNum       uint64
+	BlockHeight         uint64
 }
 
 func (this *FileInfo) Serialize(w io.Writer) error {
@@ -63,10 +65,16 @@ func (this *FileInfo) Serialize(w io.Writer) error {
 	if err := utils.WriteVarUint(w, this.CopyNum); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
-	if err := utils.WriteVarUint(w, this.Pay); err != nil {
+	if err := utils.WriteVarUint(w, this.Deposit); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	if err := utils.WriteBytes(w, this.FileProveParam[:]); err != nil {
+		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+	}
+	if err := utils.WriteVarUint(w, this.ProveBlockNum); err != nil {
+		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+	}
+	if err := utils.WriteVarUint(w, this.BlockHeight); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	return nil
@@ -98,11 +106,17 @@ func (this *FileInfo) Deserialize(r io.Reader) error {
 	if this.CopyNum, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
-	if this.Pay, err = utils.ReadVarUint(r); err != nil {
+	if this.Deposit, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	if this.FileProveParam, err = utils.ReadBytes(r); err != nil {
 		return fmt.Errorf("[FileInfo] deserialize from error:%v", err)
+	}
+	if this.ProveBlockNum, err = utils.ReadVarUint(r); err != nil {
+		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+	}
+	if this.BlockHeight, err = utils.ReadVarUint(r); err != nil {
+		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	return nil
 }
@@ -116,8 +130,10 @@ func (this *FileInfo) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeVarUint(sink, this.ChallengeRate)
 	utils.EncodeVarUint(sink, this.ChallengeTimes)
 	utils.EncodeVarUint(sink, this.CopyNum)
-	utils.EncodeVarUint(sink, this.Pay)
+	utils.EncodeVarUint(sink, this.Deposit)
 	utils.EncodeBytes(sink, this.FileProveParam)
+	utils.EncodeVarUint(sink, this.ProveBlockNum)
+	utils.EncodeVarUint(sink, this.BlockHeight)
 }
 
 func (this *FileInfo) Deserialization(source *common.ZeroCopySource) error {
@@ -154,11 +170,19 @@ func (this *FileInfo) Deserialization(source *common.ZeroCopySource) error {
 	if err != nil {
 		return err
 	}
-	this.Pay, err = utils.DecodeVarUint(source)
+	this.Deposit, err = utils.DecodeVarUint(source)
 	if err != nil {
 		return err
 	}
 	this.FileProveParam, err = utils.DecodeBytes(source)
+	if err != nil {
+		return err
+	}
+	this.ProveBlockNum, err = utils.DecodeVarUint(source)
+	if err != nil {
+		return err
+	}
+	this.BlockHeight, err = utils.DecodeVarUint(source)
 	if err != nil {
 		return err
 	}

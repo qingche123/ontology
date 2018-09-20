@@ -60,5 +60,5 @@ func TestFileInfo_Serialize(t *testing.T) {
 	fmt.Println(fileInfo2.ChallengeRate)
 	fmt.Println(fileInfo2.ChallengeTimes)
 	fmt.Println(fileInfo2.CopyNum)
-	fmt.Println(fileInfo2.Pay)
+	fmt.Println(fileInfo2.Deposit)
 }
