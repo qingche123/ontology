@@ -31,7 +31,9 @@ type FsNodeInfos struct {
 
 type FsNodeInfo struct {
 	Pledge      uint64
+	Profit      uint64
 	Volume      uint64
+	RestVol     uint64
 	ServiceTime uint64
 	WalletAddr  common.Address
 	NodeAddr    []byte
@@ -41,7 +43,13 @@ func (this *FsNodeInfo) Serialize(w io.Writer) error {
 	if err := utils.WriteVarUint(w, this.Pledge); err != nil {
 		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
 	}
+	if err := utils.WriteVarUint(w, this.Profit); err != nil {
+		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+	}
 	if err := utils.WriteVarUint(w, this.Volume); err != nil {
+		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+	}
+	if err := utils.WriteVarUint(w, this.RestVol); err != nil {
 		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
 	}
 	if err := utils.WriteVarUint(w, this.ServiceTime); err != nil {
@@ -61,7 +69,13 @@ func (this *FsNodeInfo) Deserialize(r io.Reader) error {
 	if this.Pledge, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
 	}
+	if this.Profit, err = utils.ReadVarUint(r); err != nil {
+		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+	}
 	if this.Volume, err = utils.ReadVarUint(r); err != nil {
+		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+	}
+	if this.RestVol, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
 	}
 	if this.ServiceTime, err = utils.ReadVarUint(r); err != nil {
@@ -78,7 +92,9 @@ func (this *FsNodeInfo) Deserialize(r io.Reader) error {
 
 func (this *FsNodeInfo) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeVarUint(sink, this.Pledge)
+	utils.EncodeVarUint(sink, this.Profit)
 	utils.EncodeVarUint(sink, this.Volume)
+	utils.EncodeVarUint(sink, this.RestVol)
 	utils.EncodeVarUint(sink, this.ServiceTime)
 	utils.EncodeAddress(sink, this.WalletAddr)
 	utils.EncodeBytes(sink, this.NodeAddr)
@@ -90,7 +106,15 @@ func (this *FsNodeInfo) Deserialization(source *common.ZeroCopySource) error {
 	if err != nil {
 		return err
 	}
+	this.Profit, err = utils.DecodeVarUint(source)
+	if err != nil {
+		return err
+	}
 	this.Volume, err = utils.DecodeVarUint(source)
+	if err != nil {
+		return err
+	}
+	this.RestVol, err = utils.DecodeVarUint(source)
 	if err != nil {
 		return err
 	}

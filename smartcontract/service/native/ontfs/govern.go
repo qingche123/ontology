@@ -44,6 +44,7 @@ func RegisterFsContract(native *native.NativeService) {
 	native.Register(FS_GET_NODE_LIST, FsGetNodeList)
 	native.Register(FS_STORE_FILE, FsStoreFile)
 	native.Register(FS_GET_FILE_INFO, FsGetFileInfo)
+	native.Register(FS_NODE_WITH_DRAW_PROFIT, FsNodeWithDrawProfit)
 }
 
 func FsSetInit(native *native.NativeService) ([]byte, error) {
@@ -85,15 +86,14 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	fmt.Println("===FsNodeRegister===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
-	fsSetting, err := getFsSetting(native)
-	if err != nil || fsSetting == nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
-	}
-
 	var fsNodeInfo FsNodeInfo
 	infoSource := common.NewZeroCopySource(native.Input)
 	if err := fsNodeInfo.Deserialization(infoSource); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeInfo deserialize error!")
+	}
+
+	if native.ContextRef.CheckWitness(fsNodeInfo.WalletAddr) == false {
+		return utils.BYTE_FALSE, errors.NewErr("FS Govern] CheckWitness failed!")
 	}
 
 	fsNodeInfoKey := GenFsNodeInfoKey(contract, fsNodeInfo.WalletAddr)
@@ -105,13 +105,13 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] Node have registered!")
 	}
 
+	fsSetting, err := getFsSetting(native)
+	if err != nil || fsSetting == nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
+	}
 	pledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerHourPreserve * fsNodeInfo.Volume
 	//===========================================================================
 	state := ont.State{From: fsNodeInfo.WalletAddr, To: contract, Value:pledge}
-
-	if native.ContextRef.CheckWitness(state.From) == false {
-		return utils.BYTE_FALSE, errors.NewErr("FS Govern] CheckWitness failed!")
-	}
 	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] appCallTransferOnt, ont transfer error!")
@@ -120,6 +120,8 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	//===========================================================================
 
 	fsNodeInfo.Pledge = pledge
+	fsNodeInfo.Profit = 0
+	fsNodeInfo.RestVol = fsNodeInfo.Volume
 	info := new(bytes.Buffer)
 	err = fsNodeInfo.Serialize(info)
 	if err != nil {
@@ -170,6 +172,10 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeInfo deserialize error!")
 	}
 
+	if native.ContextRef.CheckWitness(newFsNodeInfo.WalletAddr) == false {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] CheckWitness failed!")
+	}
+
 	oldFsNodeInfo, err := getFsNodeInfo(native, newFsNodeInfo.WalletAddr)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeUpdate getFsNodeInfo error!")
@@ -187,10 +193,6 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 		state = ont.State{From:newFsNodeInfo.WalletAddr, To:contract, Value:newPledge - oldFsNodeInfo.Pledge}
 	}
 	if newPledge != oldFsNodeInfo.Pledge {
-		if native.ContextRef.CheckWitness(newFsNodeInfo.WalletAddr) == false {
-			return utils.BYTE_FALSE, errors.NewErr("FS Govern] CheckWitness failed!")
-		}
-
 		err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] appCallTransferOnt, ont transfer error!")
@@ -199,6 +201,8 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 	}
 
 	newFsNodeInfo.Pledge = newPledge
+	newFsNodeInfo.Profit = oldFsNodeInfo.Profit
+	newFsNodeInfo.RestVol = oldFsNodeInfo.RestVol + newFsNodeInfo.Volume - oldFsNodeInfo.Volume
 	info := new(bytes.Buffer)
 	newFsNodeInfo.Serialize(info)
 	fsNodeInfoKey := GenFsNodeInfoKey(contract, newFsNodeInfo.WalletAddr)
@@ -216,24 +220,24 @@ func FsNodeCancel(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel DecodeAddress error!")
 	}
 
+	if native.ContextRef.CheckWitness(addr) == false {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] CheckWitness failed!")
+	}
+
 	fsNodeInfo, err := getFsNodeInfo(native, addr)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel getFsNodeInfo error!")
 	}
 
-	var state ont.State
 	if fsNodeInfo.Pledge > 0 {
-		state = ont.State{From:contract, To:fsNodeInfo.WalletAddr, Value:fsNodeInfo.Pledge}
-		if native.ContextRef.CheckWitness(state.To) == false {
-			return utils.BYTE_FALSE, errors.NewErr("FS Govern] CheckWitness failed!")
-		}
-		err = appCallTransfer(native, utils.OntContractAddress, contract, state.To, state.Value)
+		state := ont.State{From:contract, To:fsNodeInfo.WalletAddr, Value:fsNodeInfo.Pledge + fsNodeInfo.Profit}
+		err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
 		}
 		ont.AddNotifications(native, contract, &state)
 	}
-	//===========================================================================
+
 	fsNodeInfoKey := GenFsNodeInfoKey(contract, addr)
 	utils.DelStorageItem(native, fsNodeInfoKey)
 
@@ -241,6 +245,47 @@ func FsNodeCancel(native *native.NativeService) ([]byte, error) {
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel NodeListOperate delete error!")
 	}
+	return utils.BYTE_TRUE, nil
+}
+
+func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
+	fmt.Println("===FsNodeCancel===")
+	contract := native.ContextRef.CurrentContext().ContractAddress
+
+	source := common.NewZeroCopySource(native.Input)
+	addr, err := utils.DecodeAddress(source)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeWithDrawProfit DecodeAddress error!")
+	}
+
+	if native.ContextRef.CheckWitness(addr) == false {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] CheckWitness failed!")
+	}
+
+	fsNodeInfo, err := getFsNodeInfo(native, addr)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeWithDrawProfit getFsNodeInfo error!")
+	}
+
+	var state ont.State
+	if fsNodeInfo.Profit > 0 {
+		err = appCallTransfer(native, utils.OntContractAddress, contract, fsNodeInfo.WalletAddr, fsNodeInfo.Profit)
+		if err != nil {
+			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
+		}
+		fsNodeInfo.Profit = 0
+		ont.AddNotifications(native, contract, &state)
+	} else {
+		return utils.BYTE_FALSE, fmt.Errorf("[FS Govern] FsNodeWithDrawProfit balance : %v error! ", fsNodeInfo.Profit)
+	}
+	fsNodeInfoKey := GenFsNodeInfoKey(contract, addr)
+	info := new(bytes.Buffer)
+
+	if err = fsNodeInfo.Serialize(info); err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeWithDrawProfit NodeListOperate delete error!")
+	}
+	utils.PutBytes(native, fsNodeInfoKey, info.Bytes())
+
 	return utils.BYTE_TRUE, nil
 }
 
@@ -328,8 +373,11 @@ func getFsNodeInfo(native *native.NativeService, walletAddr common.Address) (*Fs
 
 	fsNodeInfoKey := GenFsNodeInfoKey(contract, walletAddr)
 	item, err := utils.GetStorageItem(native, fsNodeInfoKey)
-	if err != nil || item == nil {
+	if err != nil {
 		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeInfo GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Govern] FsNodeInfo not found!")
 	}
 	var fsNodeInfo FsNodeInfo
 	fsNodeInfoSource := common.NewZeroCopySource(item.Value)

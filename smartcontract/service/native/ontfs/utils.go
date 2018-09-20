@@ -33,6 +33,7 @@ const (
 	FS_GET_NODE_LIST    = "FsGetNodeList"
 	FS_STORE_FILE       = "FsStoreFile"
 	FS_GET_FILE_INFO    = "FsGetFileInfo"
+	FS_NODE_WITH_DRAW_PROFIT = "FsNodeWithDrawProfit"
 )
 
 const (

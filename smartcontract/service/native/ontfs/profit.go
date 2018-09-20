@@ -126,7 +126,7 @@ func FsGetFileInfo(native *native.NativeService) ([]byte, error){
 	fmt.Println("FileHash: ", fileHash)
 	fileInfo, err := getFsFileInfo(native, fileHash)
 	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo getFsNodeInfo error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo getFsFileInfo error!")
 	}
 
 	info := new(bytes.Buffer)
