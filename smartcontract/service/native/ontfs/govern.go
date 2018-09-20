@@ -43,6 +43,7 @@ func RegisterFsContract(native *native.NativeService) {
 	native.Register(FS_NODE_CANCEL, FsNodeCancel)
 	native.Register(FS_GET_NODE_LIST, FsGetNodeList)
 	native.Register(FS_STORE_FILE, FsStoreFile)
+	native.Register(FS_GET_FILE_INFO, FsGetFileInfo)
 }
 
 func FsSetInit(native *native.NativeService) ([]byte, error) {

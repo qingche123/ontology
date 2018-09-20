@@ -78,6 +78,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	if err := fileInfo.Deserialization(source); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile deserialize error!")
 	}
+	fmt.Println("FileHash: ", fileInfo.FileHash)
 
 	item, err := utils.GetStorageItem(native, fileInfo.FileHash[:])
 	if err != nil {
@@ -112,4 +113,42 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	}
 	utils.PutBytes(native, fileInfo.FileHash[:], bf.Bytes())
 	return utils.BYTE_TRUE, nil
+}
+
+func FsGetFileInfo(native *native.NativeService) ([]byte, error){
+	fmt.Println("===FsGetFileInfo===")
+
+	source := common.NewZeroCopySource(native.Input)
+	fileHash, err := utils.DecodeBytes(source)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo DecodeBytes error!")
+	}
+	fmt.Println("FileHash: ", fileHash)
+	fileInfo, err := getFsFileInfo(native, fileHash)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo getFsNodeInfo error!")
+	}
+
+	info := new(bytes.Buffer)
+	fileInfo.Serialize(info)
+	return info.Bytes(), nil
+}
+
+
+func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, error) {
+	item, err := utils.GetStorageItem(native, fileHash)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Profit] FsFileInfo not found!")
+	}
+
+	var fsFileInfo FileInfo
+	fsFileInfoSource := common.NewZeroCopySource(item.Value)
+	err = fsFileInfo.Deserialization(fsFileInfoSource)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo deserialize error!")
+	}
+	return &fsFileInfo, nil
 }

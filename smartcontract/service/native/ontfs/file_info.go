@@ -114,12 +114,10 @@ func (this *FileInfo) Serialization(sink *common.ZeroCopySink) {
 
 func (this *FileInfo) Deserialization(source *common.ZeroCopySource) error {
 	var err error
-	var fileHash []byte
-	fileHash, err = utils.DecodeBytes(source)
+	this.FileHash, err = utils.DecodeBytes(source)
 	if err != nil {
 		return err
 	}
-	copy(this.FileHash[:], fileHash[:])
 	this.UserAddr, err = utils.DecodeAddress(source)
 	if err != nil {
 		return err

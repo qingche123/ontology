@@ -32,6 +32,7 @@ const (
 	FS_NODE_CANCEL      = "FsNodeCancel"
 	FS_GET_NODE_LIST    = "FsGetNodeList"
 	FS_STORE_FILE       = "FsStoreFile"
+	FS_GET_FILE_INFO    = "FsGetFileInfo"
 )
 
 const (
