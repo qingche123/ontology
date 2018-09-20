@@ -26,15 +26,16 @@ import (
 )
 
 type FileInfo struct {
-	FileHash       []byte
-	UserAddr       common.Address
-	KeeyHours      uint64
-	FileBlockNum   uint64
-	FIleBlockSize  uint64
-	ChallengeRate  uint64
-	ChallengeTimes uint64
-	CopyNum        uint64
-	Pay            uint64
+	FileHash            []byte
+	UserAddr            common.Address
+	KeeyHours           uint64
+	FileBlockNum        uint64
+	FIleBlockSize       uint64
+	ChallengeRate       uint64
+	ChallengeTimes      uint64
+	CopyNum             uint64
+	Pay                 uint64
+	FileProveParam      []byte
 }
 
 func (this *FileInfo) Serialize(w io.Writer) error {
@@ -63,6 +64,9 @@ func (this *FileInfo) Serialize(w io.Writer) error {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	if err := utils.WriteVarUint(w, this.Pay); err != nil {
+		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+	}
+	if err := utils.WriteBytes(w, this.FileProveParam[:]); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	return nil
@@ -97,6 +101,9 @@ func (this *FileInfo) Deserialize(r io.Reader) error {
 	if this.Pay, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
+	if this.FileProveParam, err = utils.ReadBytes(r); err != nil {
+		return fmt.Errorf("[FileInfo] deserialize from error:%v", err)
+	}
 	return nil
 }
 
@@ -110,6 +117,7 @@ func (this *FileInfo) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeVarUint(sink, this.ChallengeTimes)
 	utils.EncodeVarUint(sink, this.CopyNum)
 	utils.EncodeVarUint(sink, this.Pay)
+	utils.EncodeBytes(sink, this.FileProveParam)
 }
 
 func (this *FileInfo) Deserialization(source *common.ZeroCopySource) error {
@@ -147,6 +155,10 @@ func (this *FileInfo) Deserialization(source *common.ZeroCopySource) error {
 		return err
 	}
 	this.Pay, err = utils.DecodeVarUint(source)
+	if err != nil {
+		return err
+	}
+	this.FileProveParam, err = utils.DecodeBytes(source)
 	if err != nil {
 		return err
 	}

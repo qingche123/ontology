@@ -276,17 +276,25 @@ func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
 		fsNodeInfo.Profit = 0
 		ont.AddNotifications(native, contract, &state)
 	} else {
-		return utils.BYTE_FALSE, fmt.Errorf("[FS Govern] FsNodeWithDrawProfit balance : %v error! ", fsNodeInfo.Profit)
+		return utils.BYTE_FALSE, fmt.Errorf("[FS Govern] FsNodeWithDrawProfit profit : %v error! ", fsNodeInfo.Profit)
 	}
 	fsNodeInfoKey := GenFsNodeInfoKey(contract, addr)
 	info := new(bytes.Buffer)
 
 	if err = fsNodeInfo.Serialize(info); err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeWithDrawProfit NodeListOperate delete error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeWithDrawProfit NodeInfo serialize error!")
 	}
 	utils.PutBytes(native, fsNodeInfoKey, info.Bytes())
 
 	return utils.BYTE_TRUE, nil
+}
+
+func FsFileProve(native *native.NativeService) ([]byte, error) {
+	fmt.Println("===FsNodeCancel===")
+	//contract := native.ContextRef.CurrentContext().ContractAddress
+
+
+	return nil, nil
 }
 
 func getFsSetting(native *native.NativeService) (*FsSetting, error){

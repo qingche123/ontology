@@ -30,13 +30,13 @@ type FsNodeInfos struct {
 }
 
 type FsNodeInfo struct {
-	Pledge      uint64
-	Profit      uint64
-	Volume      uint64
-	RestVol     uint64
-	ServiceTime uint64
-	WalletAddr  common.Address
-	NodeAddr    []byte
+	Pledge           uint64
+	Profit           uint64
+	Volume           uint64
+	RestVol          uint64
+	ServiceTime      uint64
+	WalletAddr       common.Address
+	NodeAddr         []byte
 }
 
 func (this *FsNodeInfo) Serialize(w io.Writer) error {

@@ -40,7 +40,7 @@ func FsGetNodeList(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode,"[FS Profit] GetStorageItem nodeSetKey error!")
 	}
 	if nodeSet == nil {
-		return utils.BYTE_FALSE, errors.NewErr("No nodeSet found!")
+		return utils.BYTE_FALSE, errors.NewErr("[FS Profit] FsGetNodeList No nodeSet found!")
 	}
 
 	addrSet := utils.NewSet()
@@ -78,7 +78,6 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	if err := fileInfo.Deserialization(source); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile deserialize error!")
 	}
-	fmt.Println("FileHash: ", fileInfo.FileHash)
 
 	item, err := utils.GetStorageItem(native, fileInfo.FileHash[:])
 	if err != nil {
@@ -123,7 +122,6 @@ func FsGetFileInfo(native *native.NativeService) ([]byte, error){
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo DecodeBytes error!")
 	}
-	fmt.Println("FileHash: ", fileHash)
 	fileInfo, err := getFsFileInfo(native, fileHash)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo getFsFileInfo error!")
@@ -133,7 +131,6 @@ func FsGetFileInfo(native *native.NativeService) ([]byte, error){
 	fileInfo.Serialize(info)
 	return info.Bytes(), nil
 }
-
 
 func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, error) {
 	item, err := utils.GetStorageItem(native, fileHash)
