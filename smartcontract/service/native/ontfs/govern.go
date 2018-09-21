@@ -46,6 +46,7 @@ func RegisterFsContract(native *native.NativeService) {
 	native.Register(FS_GET_FILE_INFO, FsGetFileInfo)
 	native.Register(FS_NODE_WITH_DRAW_PROFIT, FsNodeWithDrawProfit)
 	native.Register(FS_FILE_PROVE, FsFileProve)
+	native.Register(FS_GET_FILE_PROVE_DETAILS, FsGetFileProveDetails)
 }
 
 func FsSetInit(native *native.NativeService) ([]byte, error) {

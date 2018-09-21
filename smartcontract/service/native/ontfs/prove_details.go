@@ -46,7 +46,7 @@ func (this *ProveDetail) Serialize(w io.Writer) error {
 	if err := utils.WriteAddress(w, this.WalletAddr); err != nil {
 		return fmt.Errorf("[ProveNode] serialize from error:%v", err)
 	}
-	if err := utils.WriteVarUint(w, this.ProveTimes[:]); err != nil {
+	if err := utils.WriteVarUint(w, this.ProveTimes); err != nil {
 		return fmt.Errorf("[ProveNode] serialize from error:%v", err)
 	}
 	return nil

@@ -34,7 +34,8 @@ const (
 	FS_STORE_FILE                  = "FsStoreFile"
 	FS_GET_FILE_INFO               = "FsGetFileInfo"
 	FS_NODE_WITH_DRAW_PROFIT       = "FsNodeWithDrawProfit"
-	FS_FILE_PROVE_DETAILS          = "FsFileProveDetails"
+	FS_FILE_PROVE                  = "FsFileProve"
+	FS_GET_FILE_PROVE_DETAILS       = "FsGetFileProveDetails"
 )
 
 const (

@@ -136,14 +136,34 @@ func FsGetFileInfo(native *native.NativeService) ([]byte, error){
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo DecodeBytes error!")
 	}
-	fileInfo, err := getFsFileInfo(native, fileHash)
+	item, err := utils.GetStorageItem(native, fileHash)
 	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo getFsFileInfo error!")
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Profit] FsFileInfo not found!")
+	}
+	return item.Value, nil
+}
+
+func FsGetFileProveDetails(native *native.NativeService)([]byte, error){
+	fmt.Println("===FsGetFileProveDetails===")
+	contract := native.ContextRef.CurrentContext().ContractAddress
+	source := common.NewZeroCopySource(native.Input)
+	fileHash, err := utils.DecodeBytes(source)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileProveDetails DecodeBytes error!")
 	}
 
-	info := new(bytes.Buffer)
-	fileInfo.Serialize(info)
-	return info.Bytes(), nil
+	fileProveDetailKey := GenFsProveDetailsKey(contract, fileHash)
+	item, err := utils.GetStorageItem(native, fileProveDetailKey)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileProveDetails GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Profit] FsGetFileProveDetails not found!")
+	}
+	return item.Value, nil
 }
 
 func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, error) {
@@ -162,4 +182,21 @@ func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, er
 		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo deserialize error!")
 	}
 	return &fsFileInfo, nil
+}
+
+func getFsFileProveDetail(native *native.NativeService, fileHash []byte) (*ProveDetail, error) {
+	item, err := utils.GetStorageItem(native, fileHash)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] ProveDetail GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Profit] FsFileInfo not found!")
+	}
+	reader := bytes.NewReader(item.Value)
+	var fileProveDetail ProveDetail
+	err = fileProveDetail.Deserialize(reader)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] ProveDetail deserialize error!")
+	}
+	return &fileProveDetail, nil
 }
