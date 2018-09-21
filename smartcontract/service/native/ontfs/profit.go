@@ -114,6 +114,17 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile fileInfo serialize error!")
 	}
 	utils.PutBytes(native, fileInfo.FileHash[:], bf.Bytes())
+
+	var proveDetails FsProveDetails
+	proveDetails.CopyNum = fileInfo.CopyNum
+	proveDetails.ProveDetailNum = 0
+	proveBuff := new(bytes.Buffer)
+	if err = proveDetails.Serialize(proveBuff); err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] ProveDetails serialize error!")
+	}
+	proveDetailsKey := GenFsProveDetailsKey(contract, fileInfo.FileHash)
+	utils.PutBytes(native, proveDetailsKey, proveBuff.Bytes())
+
 	return utils.BYTE_TRUE, nil
 }
 

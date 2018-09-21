@@ -34,13 +34,14 @@ const (
 	FS_STORE_FILE                  = "FsStoreFile"
 	FS_GET_FILE_INFO               = "FsGetFileInfo"
 	FS_NODE_WITH_DRAW_PROFIT       = "FsNodeWithDrawProfit"
-	FS_FILE_PROVE                  = "FsFileProve"
+	FS_FILE_PROVE_DETAILS          = "FsFileProveDetails"
 )
 
 const (
 	ONTFS_SETTING     = "ontfssetting"
 	ONTFS_NODE_INFO   = "ontfsnodeInfo"
 	ONTFS_NODE_SET    = "ontfsnodeset"
+	ONTFS_FILE_PROVE    = "ontfsfileprove"
 )
 
 func GenFsSettingKey(contract common.Address) []byte {
@@ -54,4 +55,9 @@ func GenFsNodeInfoKey(contract common.Address, walletAddr common.Address) []byte
 
 func GenFsNodeSetKey(contract common.Address) []byte {
 	return append(contract[:], ONTFS_NODE_SET...)
+}
+
+func GenFsProveDetailsKey(contract common.Address, fileHash []byte) []byte {
+	key := append(contract[:], ONTFS_FILE_PROVE...)
+	return append(key, fileHash[:]...)
 }
