@@ -26,18 +26,18 @@ import (
 )
 
 type FileInfo struct {
-	FileHash            []byte
-	UserAddr            common.Address
-	KeeyHours           uint64
-	FileBlockNum        uint64
-	FIleBlockSize       uint64
-	ChallengeRate       uint64
-	ChallengeTimes      uint64
-	CopyNum             uint64
-	Deposit             uint64
-	FileProveParam      []byte
-	ProveBlockNum       uint64
-	BlockHeight         uint64
+	FileHash       []byte
+	UserAddr       common.Address
+	KeeyHours      uint64
+	FileBlockNum   uint64
+	FIleBlockSize  uint64
+	ChallengeRate  uint64
+	ChallengeTimes uint64
+	CopyNum        uint64
+	Deposit        uint64
+	FileProveParam []byte
+	ProveBlockNum  uint64
+	BlockHeight    uint64
 }
 
 func (this *FileInfo) Serialize(w io.Writer) error {

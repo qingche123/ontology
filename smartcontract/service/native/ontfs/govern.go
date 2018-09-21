@@ -22,11 +22,13 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/ontio/ontology-crypto/signature"
+	"github.com/ontio/ontology-crypto/keypair"
 	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/errors"
 	"github.com/ontio/ontology/smartcontract/service/native"
-	"github.com/ontio/ontology/smartcontract/service/native/utils"
 	"github.com/ontio/ontology/smartcontract/service/native/ont"
+	"github.com/ontio/ontology/smartcontract/service/native/utils"
 )
 
 func InitFs() {
@@ -47,6 +49,8 @@ func RegisterFsContract(native *native.NativeService) {
 	native.Register(FS_NODE_WITH_DRAW_PROFIT, FsNodeWithDrawProfit)
 	native.Register(FS_FILE_PROVE, FsFileProve)
 	native.Register(FS_GET_FILE_PROVE_DETAILS, FsGetFileProveDetails)
+	native.Register(FS_READ_FILE_PLEDGE, FsReadFilePledge)
+	native.Register(FS_FILE_READ_PROFIT_SETTLE, FsFileReadProfitSettle)
 }
 
 func FsSetInit(native *native.NativeService) ([]byte, error) {
@@ -101,7 +105,7 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	fsNodeInfoKey := GenFsNodeInfoKey(contract, fsNodeInfo.WalletAddr)
 	item, err := utils.GetStorageItem(native, fsNodeInfoKey)
 	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode,"[FS Govern] GetStorageItem error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetStorageItem error!")
 	}
 	if item != nil {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] Node have registered!")
@@ -113,7 +117,7 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	}
 	pledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerHourPreserve * fsNodeInfo.Volume
 	//===========================================================================
-	state := ont.State{From: fsNodeInfo.WalletAddr, To: contract, Value:pledge}
+	state := ont.State{From: fsNodeInfo.WalletAddr, To: contract, Value: pledge}
 	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] appCallTransferOnt, ont transfer error!")
@@ -191,9 +195,9 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 
 	var state ont.State
 	if newPledge < oldFsNodeInfo.Pledge {
-		state = ont.State{From:contract, To:newFsNodeInfo.WalletAddr, Value:oldFsNodeInfo.Pledge - newPledge}
+		state = ont.State{From: contract, To: newFsNodeInfo.WalletAddr, Value: oldFsNodeInfo.Pledge - newPledge}
 	} else if newPledge > oldFsNodeInfo.Pledge {
-		state = ont.State{From:newFsNodeInfo.WalletAddr, To:contract, Value:newPledge - oldFsNodeInfo.Pledge}
+		state = ont.State{From: newFsNodeInfo.WalletAddr, To: contract, Value: newPledge - oldFsNodeInfo.Pledge}
 	}
 	if newPledge != oldFsNodeInfo.Pledge {
 		err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
@@ -233,7 +237,7 @@ func FsNodeCancel(native *native.NativeService) ([]byte, error) {
 	}
 
 	if fsNodeInfo.Pledge > 0 {
-		state := ont.State{From:contract, To:fsNodeInfo.WalletAddr, Value:fsNodeInfo.Pledge + fsNodeInfo.Profit}
+		state := ont.State{From: contract, To: fsNodeInfo.WalletAddr, Value: fsNodeInfo.Pledge + fsNodeInfo.Profit}
 		err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
@@ -271,7 +275,7 @@ func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
 	}
 
 	if fsNodeInfo.Profit > 0 {
-		state := ont.State{From:contract, To:fsNodeInfo.WalletAddr, Value:fsNodeInfo.Profit}
+		state := ont.State{From: contract, To: fsNodeInfo.WalletAddr, Value: fsNodeInfo.Profit}
 		err = appCallTransfer(native, utils.OntContractAddress, contract, fsNodeInfo.WalletAddr, fsNodeInfo.Profit)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
@@ -337,7 +341,7 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	}
 	var proveDetails FsProveDetails
 	reader := bytes.NewReader(item.Value)
-	if err = proveDetails.Deserialize(reader); err != nil{
+	if err = proveDetails.Deserialize(reader); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve ProveDetails deserialize error!")
 	}
 
@@ -379,8 +383,8 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	utils.PutBytes(native, proveDetailsKey, proveDetailsBuff.Bytes())
 
 	//transfer profit
-	profit := (fsSetting.GasPerKBPerHourPreserve * fileInfo.ChallengeRate + fsSetting.GasForChallenge) * fsSetting.FsGasPrice
-	state := ont.State{From:contract, To:fileProve.WalletAddr, Value:profit}
+	profit := (fsSetting.GasPerKBPerHourPreserve*fileInfo.ChallengeRate + fsSetting.GasForChallenge) * fsSetting.FsGasPrice
+	state := ont.State{From: contract, To: fileProve.WalletAddr, Value: profit}
 	err = appCallTransfer(native, utils.OntContractAddress, contract, fileProve.WalletAddr, profit)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve appCallTransferOnt, ont transfer error!")
@@ -397,17 +401,121 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	return utils.BYTE_TRUE, nil
 }
 
-func checkProveExpire(currBlockHeight, haveProvedTimes, challengeRate, fileBlockHeight uint64,) bool {
-	expireMinHeight := fileBlockHeight + haveProvedTimes * challengeRate
-	expireMaxHeight := fileBlockHeight + (haveProvedTimes + 1) * challengeRate
-	if uint64(currBlockHeight) > expireMaxHeight ||  uint64(currBlockHeight) < expireMinHeight{
+func FsFileReadProfitSettle(native *native.NativeService) ([]byte, error) {
+	fmt.Println("===FileReadProfitSettle===")
+	contract := native.ContextRef.CurrentContext().ContractAddress
+
+	var settleSlice FileReadSettleSlice
+	source := common.NewZeroCopySource(native.Input)
+	if err := settleSlice.Deserialization(source); err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileReadSettleSlice deserialize error!")
+	}
+
+	if native.ContextRef.CheckWitness(settleSlice.PayTo) == false {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] CheckWitness failed!")
+	}
+
+	fileReadPledge, err := getFileReadPledge(native, settleSlice.FileHash)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFileReadPledge error!")
+	}
+
+	if fileReadPledge.Id <= settleSlice.SliceId {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle id error!")
+	}
+	if  fileReadPledge.FromAddr != settleSlice.PayFrom {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle FromAddr error!")
+	}
+	ret, err := checkSettleSig(settleSlice)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileReadProfitSettle FileReadSettleSlice verify failed!")
+	}
+	if !ret {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle FileReadSettleSlice verify failed!")
+	}
+
+	fileReadPledge.Id = settleSlice.SliceId
+	valueChange := settleSlice.SlicePay - (fileReadPledge.TotalValue - fileReadPledge.RestValue)
+	fileReadPledge.RestValue -= valueChange
+	bf := new(bytes.Buffer)
+	err = fileReadPledge.Serialize(bf)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsReadFilePledge serialize error!")
+	}
+	key := GenFsFileReadPledgeKey(contract, fileReadPledge.FileHash)
+	utils.PutBytes(native, key, bf.Bytes())
+
+	fsNodeInfo, err := getFsNodeInfo(native, settleSlice.PayTo)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsNodeInfo error!")
+	}
+	fsNodeInfo.Profit += valueChange
+	fsNodeInfoKey := GenFsNodeInfoKey(contract, fsNodeInfo.WalletAddr)
+	info := new(bytes.Buffer)
+	if err = fsNodeInfo.Serialize(info); err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileReadProfitSettle NodeInfo serialize error!")
+	}
+	utils.PutBytes(native, fsNodeInfoKey, info.Bytes())
+	return utils.BYTE_TRUE, nil
+}
+
+func checkSettleSig(settleSlice FileReadSettleSlice) (bool, error) {
+	tmpSettleSlice := FileReadSettleSlice{
+		FileHash: settleSlice.FileHash,
+		PayFrom:  settleSlice.PayFrom,
+		PayTo:    settleSlice.PayTo,
+		SlicePay: settleSlice.SlicePay,
+		SliceId:  settleSlice.SliceId,
+	}
+
+	bf := new(bytes.Buffer)
+	err := tmpSettleSlice.Serialize(bf)
+	if err != nil {
+		return false, fmt.Errorf("FileReadSettleSlice serialize error: %s", err.Error())
+	}
+
+	signValue, err := signature.Deserialize(settleSlice.Sig)
+	if err != nil {
+		return false, fmt.Errorf("FileReadSettleSlice signature deserialize error: %s", err.Error())
+	}
+	pubKey, err := keypair.DeserializePublicKey(settleSlice.PubKey)
+	if err != nil {
+		return false, fmt.Errorf("FileReadSettleSlice deserialize PublicKey( error: %s", err.Error())
+	}
+	result := signature.Verify(pubKey, bf.Bytes(), signValue)
+	return result, nil
+}
+
+func checkProveExpire(currBlockHeight, haveProvedTimes, challengeRate, fileBlockHeight uint64) bool {
+	expireMinHeight := fileBlockHeight + haveProvedTimes*challengeRate
+	expireMaxHeight := fileBlockHeight + (haveProvedTimes+1)*challengeRate
+	if uint64(currBlockHeight) > expireMaxHeight || uint64(currBlockHeight) < expireMinHeight {
 		//todo: how to process
 		return false
 	}
 	return true
 }
 
-func getFsSetting(native *native.NativeService) (*FsSetting, error){
+func getFileReadPledge(native *native.NativeService, fileHash []byte) (*FileReadPledge, error) {
+	contract := native.ContextRef.CurrentContext().ContractAddress
+	key := GenFsFileReadPledgeKey(contract, fileHash)
+	item, err := utils.GetStorageItem(native, key)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFileReadPledge error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Govern] GetFileProfit not found!")
+	}
+	var fileReadPledge FileReadPledge
+	reader := bytes.NewReader(item.Value)
+	err = fileReadPledge.Deserialize(reader)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileReadPledge deserialize error!")
+	}
+	return &fileReadPledge, nil
+}
+
+func getFsSetting(native *native.NativeService) (*FsSetting, error) {
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	var fsSetting FsSetting
@@ -443,13 +551,13 @@ func nodeListOperate(native *native.NativeService, walletAddr common.Address, is
 	nodeSetKey := GenFsNodeSetKey(contract)
 	nodeSet, err := utils.GetStorageItem(native, nodeSetKey)
 	if err != nil {
-		return errors.NewDetailErr(err, errors.ErrNoCode,"[FS Govern] GetStorageItem nodeSetKey error!")
+		return errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetStorageItem nodeSetKey error!")
 	}
 
 	v := utils.NewSet()
 	if nodeSet != nil {
 		if err = v.AddrDeserialize(nodeSet.Value); err != nil {
-			return errors.NewDetailErr(err, errors.ErrNoCode,"[FS Govern] Set deserialize error!")
+			return errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] Set deserialize error!")
 		}
 	}
 
@@ -461,7 +569,7 @@ func nodeListOperate(native *native.NativeService, walletAddr common.Address, is
 
 	data, err := v.AddrSerialize()
 	if err != nil {
-		return errors.NewDetailErr(err, errors.ErrNoCode,"[FS Govern] Put node to set error!")
+		return errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] Put node to set error!")
 	}
 	utils.PutBytes(native, nodeSetKey, data)
 	return nil

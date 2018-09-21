@@ -26,11 +26,11 @@ import (
 )
 
 type FileProve struct {
-	FileHash             []byte
-	Prove                []byte
-	BlockHeight          uint64
-	WalletAddr           common.Address
-	Profit               uint64
+	FileHash    []byte
+	Prove       []byte
+	BlockHeight uint64
+	WalletAddr  common.Address
+	Profit      uint64
 }
 
 func (this *FileProve) Serialize(w io.Writer) error {
@@ -104,6 +104,3 @@ func (this *FileProve) Deserialization(source *common.ZeroCopySource) error {
 	}
 	return nil
 }
-
-
-

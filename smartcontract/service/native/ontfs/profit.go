@@ -19,15 +19,15 @@
 package ontfs
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/json"
+	"fmt"
 
+	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/errors"
 	"github.com/ontio/ontology/smartcontract/service/native"
-	"github.com/ontio/ontology/smartcontract/service/native/utils"
-	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/smartcontract/service/native/ont"
+	"github.com/ontio/ontology/smartcontract/service/native/utils"
 )
 
 func FsGetNodeList(native *native.NativeService) ([]byte, error) {
@@ -37,7 +37,7 @@ func FsGetNodeList(native *native.NativeService) ([]byte, error) {
 	nodeSetKey := GenFsNodeSetKey(contract)
 	nodeSet, err := utils.GetStorageItem(native, nodeSetKey)
 	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode,"[FS Profit] GetStorageItem nodeSetKey error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] GetStorageItem nodeSetKey error!")
 	}
 	if nodeSet == nil {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Profit] FsGetNodeList No nodeSet found!")
@@ -45,7 +45,7 @@ func FsGetNodeList(native *native.NativeService) ([]byte, error) {
 
 	addrSet := utils.NewSet()
 	if err = addrSet.AddrDeserialize(nodeSet.Value); err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode,"[FS Profit] Set deserialize error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] Set deserialize error!")
 	}
 
 	items := addrSet.GetAllAddrs()
@@ -54,7 +54,7 @@ func FsGetNodeList(native *native.NativeService) ([]byte, error) {
 	}
 	nodesInfo := new(bytes.Buffer)
 	var fsNodeInfos FsNodeInfos
-	for _ , addr := range items {
+	for _, addr := range items {
 		fsNodeInfo, err := getFsNodeInfo(native, addr)
 		if err != nil {
 			fmt.Errorf("[FS Profit] FsGetNodeList getFsNodeInfo(%v) error", addr)
@@ -81,7 +81,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 
 	item, err := utils.GetStorageItem(native, fileInfo.FileHash[:])
 	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode,"[FS Profit] GetStorageItem error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] GetStorageItem error!")
 	}
 	if item != nil {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Profit] File have stored!")
@@ -92,11 +92,11 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile getFsSetting error!")
 	}
 
-	fileInfo.Deposit = (fileInfo.FileBlockNum * fileInfo.FIleBlockSize * set.GasPerKBPerHourPreserve  +
-		fileInfo.ChallengeRate * fileInfo.ChallengeTimes * set.GasForChallenge) *
+	fileInfo.Deposit = (fileInfo.FileBlockNum*fileInfo.FIleBlockSize*set.GasPerKBPerHourPreserve +
+		fileInfo.ChallengeRate*fileInfo.ChallengeTimes*set.GasForChallenge) *
 		fileInfo.CopyNum * set.FsGasPrice
 
-	state := ont.State{From: fileInfo.UserAddr, To: contract, Value:fileInfo.Deposit}
+	state := ont.State{From: fileInfo.UserAddr, To: contract, Value: fileInfo.Deposit}
 	if native.ContextRef.CheckWitness(state.From) == false {
 		return utils.BYTE_FALSE, errors.NewErr("FS Profit] CheckWitness failed!")
 	}
@@ -128,9 +128,8 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	return utils.BYTE_TRUE, nil
 }
 
-func FsGetFileInfo(native *native.NativeService) ([]byte, error){
+func FsGetFileInfo(native *native.NativeService) ([]byte, error) {
 	fmt.Println("===FsGetFileInfo===")
-
 	source := common.NewZeroCopySource(native.Input)
 	fileHash, err := utils.DecodeBytes(source)
 	if err != nil {
@@ -146,7 +145,7 @@ func FsGetFileInfo(native *native.NativeService) ([]byte, error){
 	return item.Value, nil
 }
 
-func FsGetFileProveDetails(native *native.NativeService)([]byte, error){
+func FsGetFileProveDetails(native *native.NativeService) ([]byte, error) {
 	fmt.Println("===FsGetFileProveDetails===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 	source := common.NewZeroCopySource(native.Input)
@@ -164,6 +163,78 @@ func FsGetFileProveDetails(native *native.NativeService)([]byte, error){
 		return nil, errors.NewErr("[FS Profit] FsGetFileProveDetails not found!")
 	}
 	return item.Value, nil
+}
+
+func FsReadFilePledge(native *native.NativeService) ([]byte, error){
+	fmt.Println("===FsReadFilePledge===")
+
+	contract := native.ContextRef.CurrentContext().ContractAddress
+	var fileReadPledge FileReadPledge
+	source := common.NewZeroCopySource(native.Input)
+	err := fileReadPledge.Deserialization(source)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge deserialization error!")
+	}
+
+	pledge, err := getReadFilePledge(native, fileReadPledge.FileHash)
+	if err == nil && pledge != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge file read pledged error!")
+	}
+
+	state := ont.State{From: fileReadPledge.FromAddr, To: contract, Value: fileReadPledge.TotalValue}
+	if native.ContextRef.CheckWitness(state.From) == false {
+		return utils.BYTE_FALSE, errors.NewErr("FS Profit] CheckWitness failed!")
+	}
+	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] appCallTransferOnt, ont transfer error!")
+	}
+	ont.AddNotifications(native, contract, &state)
+
+	fileReadPledge.Id = 0
+	fileInfo, err := getFsFileInfo(native, fileReadPledge.FileHash)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge getFsFileInfo error!")
+	}
+
+	fsSetting, err := getFsSetting(native)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge getFsSetting error!")
+	}
+
+	readMinFee := fileInfo.FileBlockNum * fileInfo.FIleBlockSize * fsSetting.FsGasPrice * fsSetting.GasPerKBForRead
+	if fileReadPledge.TotalValue < readMinFee {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge insufficient pay!")
+	}
+
+	key := GenFsFileReadPledgeKey(contract, fileReadPledge.FileHash)
+	bf := new(bytes.Buffer)
+	err = fileReadPledge.Serialize(bf)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge serialize error!")
+	}
+	utils.PutBytes(native, key, bf.Bytes())
+	return utils.BYTE_TRUE, nil
+}
+
+func getReadFilePledge(native *native.NativeService, fileHash []byte) (*FileReadPledge, error){
+	contract := native.ContextRef.CurrentContext().ContractAddress
+	key := GenFsFileReadPledgeKey(contract, fileHash)
+	item, err := utils.GetStorageItem(native, key)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] GetReadFilePledge GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Profit] FileReadPledge not found!")
+	}
+
+	var fileReadPledge FileReadPledge
+	fileReadPledgeSource := common.NewZeroCopySource(item.Value)
+	err = fileReadPledge.Deserialization(fileReadPledgeSource)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] GetReadFilePledge deserialize error!")
+	}
+	return &fileReadPledge, nil
 }
 
 func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, error) {

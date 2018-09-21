@@ -23,26 +23,29 @@ import (
 )
 
 const (
-	FS_SET                         = "FsSet"
-	FS_SET_INIT                    = "FsSettingInit"
-	FS_GETSETTING                  = "FsGetSetting"
-	FS_NODE_REGISTER               = "FsNodeRegister"
-	FS_NODE_QUERY                  = "FsNodeQuery"
-	FS_NODE_UPDATE                 = "FsNodeUpdate"
-	FS_NODE_CANCEL                 = "FsNodeCancel"
-	FS_GET_NODE_LIST               = "FsGetNodeList"
-	FS_STORE_FILE                  = "FsStoreFile"
-	FS_GET_FILE_INFO               = "FsGetFileInfo"
-	FS_NODE_WITH_DRAW_PROFIT       = "FsNodeWithDrawProfit"
-	FS_FILE_PROVE                  = "FsFileProve"
-	FS_GET_FILE_PROVE_DETAILS       = "FsGetFileProveDetails"
+	FS_SET                     = "FsSet"
+	FS_SET_INIT                = "FsSettingInit"
+	FS_GETSETTING              = "FsGetSetting"
+	FS_NODE_REGISTER           = "FsNodeRegister"
+	FS_NODE_QUERY              = "FsNodeQuery"
+	FS_NODE_UPDATE             = "FsNodeUpdate"
+	FS_NODE_CANCEL             = "FsNodeCancel"
+	FS_GET_NODE_LIST           = "FsGetNodeList"
+	FS_STORE_FILE              = "FsStoreFile"
+	FS_GET_FILE_INFO           = "FsGetFileInfo"
+	FS_NODE_WITH_DRAW_PROFIT   = "FsNodeWithDrawProfit"
+	FS_FILE_PROVE              = "FsFileProve"
+	FS_GET_FILE_PROVE_DETAILS  = "FsGetFileProveDetails"
+	FS_READ_FILE_PLEDGE        = "FsReadFilePledge"
+	FS_FILE_READ_PROFIT_SETTLE = "FsFileReadProfitSettle"
 )
 
 const (
-	ONTFS_SETTING     = "ontfssetting"
-	ONTFS_NODE_INFO   = "ontfsnodeInfo"
-	ONTFS_NODE_SET    = "ontfsnodeset"
-	ONTFS_FILE_PROVE    = "ontfsfileprove"
+	ONTFS_SETTING          = "ontfssetting"
+	ONTFS_NODE_INFO        = "ontfsnodeInfo"
+	ONTFS_NODE_SET         = "ontfsnodeset"
+	ONTFS_FILE_PROVE       = "ontfsfileprove"
+	ONTFS_FILE_READ_PLEDGE = "ontfsfileprove"
 )
 
 func GenFsSettingKey(contract common.Address) []byte {
@@ -60,5 +63,10 @@ func GenFsNodeSetKey(contract common.Address) []byte {
 
 func GenFsProveDetailsKey(contract common.Address, fileHash []byte) []byte {
 	key := append(contract[:], ONTFS_FILE_PROVE...)
+	return append(key, fileHash[:]...)
+}
+
+func GenFsFileReadPledgeKey(contract common.Address, fileHash []byte) []byte {
+	key := append(contract[:], ONTFS_FILE_READ_PLEDGE...)
 	return append(key, fileHash[:]...)
 }

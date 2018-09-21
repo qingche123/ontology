@@ -19,24 +19,24 @@
 package ontfs
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"bytes"
 
 	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/smartcontract/service/native/utils"
 )
 
 type FsProveDetails struct {
-	CopyNum              uint64
-	ProveDetailNum       uint64
-	ProveDetails         []ProveDetail
+	CopyNum        uint64
+	ProveDetailNum uint64
+	ProveDetails   []ProveDetail
 }
 
 type ProveDetail struct {
-	NodeAddr             []byte
-	WalletAddr           common.Address
-	ProveTimes           uint64
+	NodeAddr   []byte
+	WalletAddr common.Address
+	ProveTimes uint64
 }
 
 func (this *ProveDetail) Serialize(w io.Writer) error {
@@ -69,13 +69,13 @@ func (this *ProveDetail) Deserialize(r io.Reader) error {
 func (this *FsProveDetails) Serialize(w io.Writer) error {
 	var err error
 	bf := new(bytes.Buffer)
-	if err = utils.WriteVarUint(w, this.CopyNum) ; err != nil {
+	if err = utils.WriteVarUint(w, this.CopyNum); err != nil {
 		return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
 	}
-	if err = utils.WriteVarUint(w, this.ProveDetailNum) ; err != nil {
+	if err = utils.WriteVarUint(w, this.ProveDetailNum); err != nil {
 		return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
 	}
-	for _, v := range this.ProveDetails  {
+	for _, v := range this.ProveDetails {
 		err = v.Serialize(bf)
 		if err != nil {
 			return fmt.Errorf("[ProveDetail] serialize from error:%v", err)

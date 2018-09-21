@@ -19,10 +19,10 @@
 package ontfs
 
 import (
-	"testing"
-	"github.com/ontio/ontology/common"
 	"bytes"
 	"fmt"
+	"github.com/ontio/ontology/common"
+	"testing"
 )
 
 func TestFileInfo_Serialize(t *testing.T) {
@@ -31,15 +31,15 @@ func TestFileInfo_Serialize(t *testing.T) {
 	var addr common.Address
 	copy(addr[:], fileHashStr[0:20])
 	fileInfo := FileInfo{
-		FileHash: fileHashStr,
-		UserAddr: addr,
-		KeeyHours: 1,
-		FileBlockNum:2,
-		FIleBlockSize:3,
-		ChallengeRate:4,
-		ChallengeTimes:5,
-		CopyNum:6,
-		Pay:7,
+		FileHash:       fileHashStr,
+		UserAddr:       addr,
+		KeeyHours:      1,
+		FileBlockNum:   2,
+		FIleBlockSize:  3,
+		ChallengeRate:  4,
+		ChallengeTimes: 5,
+		CopyNum:        6,
+		Pay:            7,
 	}
 	b := new(bytes.Buffer)
 	err := fileInfo.Serialize(b)
