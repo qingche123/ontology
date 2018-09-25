@@ -31,7 +31,6 @@ import (
 )
 
 func FsGetNodeList(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsGetNodeList===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	nodeSetKey := GenFsNodeSetKey(contract)
@@ -70,7 +69,6 @@ func FsGetNodeList(native *native.NativeService) ([]byte, error) {
 }
 
 func FsStoreFile(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsStoreFile===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	var fileInfo FileInfo
@@ -129,7 +127,6 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 }
 
 func FsGetFileInfo(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsGetFileInfo===")
 	source := common.NewZeroCopySource(native.Input)
 	fileHash, err := utils.DecodeBytes(source)
 	if err != nil {
@@ -146,7 +143,6 @@ func FsGetFileInfo(native *native.NativeService) ([]byte, error) {
 }
 
 func FsGetFileProveDetails(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsGetFileProveDetails===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 	source := common.NewZeroCopySource(native.Input)
 	fileHash, err := utils.DecodeBytes(source)
@@ -166,8 +162,6 @@ func FsGetFileProveDetails(native *native.NativeService) ([]byte, error) {
 }
 
 func FsReadFilePledge(native *native.NativeService) ([]byte, error){
-	fmt.Println("===FsReadFilePledge===")
-
 	contract := native.ContextRef.CurrentContext().ContractAddress
 	var fileReadPledge FileReadPledge
 	source := common.NewZeroCopySource(native.Input)
@@ -214,6 +208,20 @@ func FsReadFilePledge(native *native.NativeService) ([]byte, error){
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge serialize error!")
 	}
 	utils.PutBytes(native, key, bf.Bytes())
+	return utils.BYTE_TRUE, nil
+}
+
+func FsDeleteFile(native *native.NativeService) ([]byte, error) {
+	contract := native.ContextRef.CurrentContext().ContractAddress
+
+	source := common.NewZeroCopySource(native.Input)
+	fileHash, err := utils.DecodeBytes(source)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo DecodeBytes error!")
+	}
+	utils.DelStorageItem(native, fileHash[:])
+	proveDetailsKey := GenFsProveDetailsKey(contract, fileHash)
+	utils.DelStorageItem(native, proveDetailsKey)
 	return utils.BYTE_TRUE, nil
 }
 

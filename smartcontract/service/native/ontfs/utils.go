@@ -38,6 +38,7 @@ const (
 	FS_GET_FILE_PROVE_DETAILS  = "FsGetFileProveDetails"
 	FS_READ_FILE_PLEDGE        = "FsReadFilePledge"
 	FS_FILE_READ_PROFIT_SETTLE = "FsFileReadProfitSettle"
+	FS_DELETE_FILE             = "FsDeleteFile"
 )
 
 const (

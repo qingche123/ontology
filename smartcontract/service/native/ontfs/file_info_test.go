@@ -39,7 +39,10 @@ func TestFileInfo_Serialize(t *testing.T) {
 		ChallengeRate:  4,
 		ChallengeTimes: 5,
 		CopyNum:        6,
-		Pay:            7,
+		Deposit:        7,
+		FileProveParam: nil,
+		ProveBlockNum:  8,
+		BlockHeight:    9,
 	}
 	b := new(bytes.Buffer)
 	err := fileInfo.Serialize(b)
@@ -61,4 +64,7 @@ func TestFileInfo_Serialize(t *testing.T) {
 	fmt.Println(fileInfo2.ChallengeTimes)
 	fmt.Println(fileInfo2.CopyNum)
 	fmt.Println(fileInfo2.Deposit)
+	fmt.Println(fileInfo2.FileProveParam)
+	fmt.Println(fileInfo2.ProveBlockNum)
+	fmt.Println(fileInfo2.BlockHeight)
 }

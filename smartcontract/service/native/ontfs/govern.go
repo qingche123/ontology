@@ -31,65 +31,7 @@ import (
 	"github.com/ontio/ontology/smartcontract/service/native/utils"
 )
 
-func InitFs() {
-	native.Contracts[utils.OntFSContractAddress] = RegisterFsContract
-}
-
-func RegisterFsContract(native *native.NativeService) {
-	native.Register(FS_SET, FsSet)
-	native.Register(FS_SET_INIT, FsSetInit)
-	native.Register(FS_GETSETTING, FsGetSetting)
-	native.Register(FS_NODE_REGISTER, FsNodeRegister)
-	native.Register(FS_NODE_QUERY, FsNodeQuery)
-	native.Register(FS_NODE_UPDATE, FsNodeUpdate)
-	native.Register(FS_NODE_CANCEL, FsNodeCancel)
-	native.Register(FS_GET_NODE_LIST, FsGetNodeList)
-	native.Register(FS_STORE_FILE, FsStoreFile)
-	native.Register(FS_GET_FILE_INFO, FsGetFileInfo)
-	native.Register(FS_NODE_WITH_DRAW_PROFIT, FsNodeWithDrawProfit)
-	native.Register(FS_FILE_PROVE, FsFileProve)
-	native.Register(FS_GET_FILE_PROVE_DETAILS, FsGetFileProveDetails)
-	native.Register(FS_READ_FILE_PLEDGE, FsReadFilePledge)
-	native.Register(FS_FILE_READ_PROFIT_SETTLE, FsFileReadProfitSettle)
-}
-
-func FsSetInit(native *native.NativeService) ([]byte, error) {
-	var fsSetting FsSetting
-
-	fsSetting.FsGasPrice = 1
-	fsSetting.GasPerKBPerHourPreserve = 1
-	fsSetting.GasPerKBForRead = 1
-	fsSetting.GasForChallenge = 1
-
-	setFsSetting(native, fsSetting)
-	return utils.BYTE_TRUE, nil
-}
-
-func FsSet(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsSet===")
-	var fsSetting FsSetting
-	infoSource := common.NewZeroCopySource(native.Input)
-	if err := fsSetting.Deserialization(infoSource); err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsSetting deserialize error!")
-	}
-
-	setFsSetting(native, fsSetting)
-	return utils.BYTE_TRUE, nil
-}
-
-func FsGetSetting(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsGetSetting===")
-	fsSetting, err := getFsSetting(native)
-	if err != nil || fsSetting == nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
-	}
-	fs := new(bytes.Buffer)
-	fsSetting.Serialize(fs)
-	return fs.Bytes(), nil
-}
-
 func FsNodeRegister(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeRegister===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	var fsNodeInfo FsNodeInfo
@@ -146,8 +88,6 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 }
 
 func FsNodeQuery(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeQuery===")
-
 	source := common.NewZeroCopySource(native.Input)
 	walletAddr, err := utils.DecodeAddress(source)
 	if err != nil {
@@ -165,7 +105,6 @@ func FsNodeQuery(native *native.NativeService) ([]byte, error) {
 }
 
 func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeUpdate===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	fsSetting, err := getFsSetting(native)
@@ -218,7 +157,6 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 }
 
 func FsNodeCancel(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeCancel===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	source := common.NewZeroCopySource(native.Input)
@@ -256,7 +194,6 @@ func FsNodeCancel(native *native.NativeService) ([]byte, error) {
 }
 
 func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeCancel===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	source := common.NewZeroCopySource(native.Input)
@@ -297,7 +234,6 @@ func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
 }
 
 func FsFileProve(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FsNodeProve===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	var fileProve FileProve
@@ -402,7 +338,6 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 }
 
 func FsFileReadProfitSettle(native *native.NativeService) ([]byte, error) {
-	fmt.Println("===FileReadProfitSettle===")
 	contract := native.ContextRef.CurrentContext().ContractAddress
 
 	var settleSlice FileReadSettleSlice
