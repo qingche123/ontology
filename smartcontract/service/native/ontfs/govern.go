@@ -29,6 +29,7 @@ import (
 	"github.com/ontio/ontology/smartcontract/service/native"
 	"github.com/ontio/ontology/smartcontract/service/native/ont"
 	"github.com/ontio/ontology/smartcontract/service/native/utils"
+	"github.com/daseinio/dasein-go-PoR/PoR"
 )
 
 func FsNodeRegister(native *native.NativeService) ([]byte, error) {
@@ -57,15 +58,14 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 	if err != nil || fsSetting == nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
 	}
+
 	pledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerHourPreserve * fsNodeInfo.Volume
-	//===========================================================================
 	state := ont.State{From: fsNodeInfo.WalletAddr, To: contract, Value: pledge}
 	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] appCallTransferOnt, ont transfer error!")
 	}
 	ont.AddNotifications(native, contract, &state)
-	//===========================================================================
 
 	fsNodeInfo.Pledge = pledge
 	fsNodeInfo.Profit = 0
@@ -77,7 +77,6 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeInfo serialize error!")
 	}
 	utils.PutBytes(native, fsNodeInfoKey, info.Bytes())
-	//===========================================================================
 
 	err = nodeListOperate(native, fsNodeInfo.WalletAddr, true)
 	if err != nil {
@@ -255,15 +254,6 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve getFsFileInfo error!")
 	}
 
-	header, err := native.Store.GetHeaderByHeight(uint32(fileProve.BlockHeight))
-	if err != nil {
-		return nil, err
-	}
-	_, err = GenChallenge(header.Hash(), fileInfo.FileBlockNum, fileInfo.ProveBlockNum)
-	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve GenChallenge error!")
-	}
-
 	nodeInfo, err := getFsNodeInfo(native, fileProve.WalletAddr)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve getFsNodeInfo error!")
@@ -304,13 +294,24 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 		proveDetails.ProveDetailNum++
 	}
 
-	//---------------------------------------------------------------
-	//Verify  (challenge, fileProve.Prove, fileInfo.FileProveParam)
-	//---------------------------------------------------------------
-	//if err != nil {
-	//	return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileProve Verify error!")
-	//}
-	//---------------------------------------------------------------
+	var pp ProveParam
+	paramReader := bytes.NewReader(fileInfo.FileProveParam)
+	err = pp.Deserialize(paramReader)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] ProveParam deserialize error!")
+	}
+
+	header, err := native.Store.GetHeaderByHeight(uint32(fileProve.BlockHeight))
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetHeaderByHeight error!")
+	}
+	blockHash := header.Hash()
+	challenge := GenChallenge(blockHash, fileInfo.FileBlockNum, fileInfo.ProveBlockNum)
+
+	ret := PoR.VerifyX(pp.G, pp.G0, pp.PubKey, string(pp.FileId), fileProve.MultiRes, string(fileProve.AddRes), challenge)
+	if !ret {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] ProveData Verify failed!")
+	}
 
 	proveDetailsBuff := new(bytes.Buffer)
 	if err = proveDetails.Serialize(proveDetailsBuff); err != nil {

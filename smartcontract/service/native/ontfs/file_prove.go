@@ -27,7 +27,8 @@ import (
 
 type FileProve struct {
 	FileHash    []byte
-	Prove       []byte
+	MultiRes    []byte
+	AddRes      []byte
 	BlockHeight uint64
 	WalletAddr  common.Address
 	Profit      uint64
@@ -37,7 +38,10 @@ func (this *FileProve) Serialize(w io.Writer) error {
 	if err := utils.WriteBytes(w, this.FileHash[:]); err != nil {
 		return fmt.Errorf("[FileProve] serialize from error:%v", err)
 	}
-	if err := utils.WriteBytes(w, this.Prove); err != nil {
+	if err := utils.WriteBytes(w, this.MultiRes); err != nil {
+		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+	}
+	if err := utils.WriteBytes(w, this.AddRes); err != nil {
 		return fmt.Errorf("[FileProve] serialize from error:%v", err)
 	}
 	if err := utils.WriteVarUint(w, this.BlockHeight); err != nil {
@@ -57,7 +61,10 @@ func (this *FileProve) Deserialize(r io.Reader) error {
 	if this.FileHash, err = utils.ReadBytes(r); err != nil {
 		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
 	}
-	if this.Prove, err = utils.ReadBytes(r); err != nil {
+	if this.MultiRes, err = utils.ReadBytes(r); err != nil {
+		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+	}
+	if this.AddRes, err = utils.ReadBytes(r); err != nil {
 		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
 	}
 	if this.BlockHeight, err = utils.ReadVarUint(r); err != nil {
@@ -73,8 +80,9 @@ func (this *FileProve) Deserialize(r io.Reader) error {
 }
 
 func (this *FileProve) Serialization(sink *common.ZeroCopySink) {
-	utils.EncodeBytes(sink, this.FileHash[:])
-	utils.EncodeBytes(sink, this.Prove[:])
+	utils.EncodeBytes(sink, this.FileHash)
+	utils.EncodeBytes(sink, this.MultiRes)
+	utils.EncodeBytes(sink, this.AddRes)
 	utils.EncodeVarUint(sink, this.BlockHeight)
 	utils.EncodeAddress(sink, this.WalletAddr)
 	utils.EncodeVarUint(sink, this.Profit)
@@ -86,7 +94,11 @@ func (this *FileProve) Deserialization(source *common.ZeroCopySource) error {
 	if err != nil {
 		return err
 	}
-	this.Prove, err = utils.DecodeBytes(source)
+	this.MultiRes, err = utils.DecodeBytes(source)
+	if err != nil {
+		return err
+	}
+	this.AddRes, err = utils.DecodeBytes(source)
 	if err != nil {
 		return err
 	}

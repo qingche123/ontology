@@ -20,19 +20,16 @@ package ontfs
 
 import (
 	"crypto/sha256"
+
+	"github.com/daseinio/dasein-go-PoR/PoR"
 	"github.com/ontio/ontology/common"
 )
 
-type Challenge struct {
-	Index uint64
-	Rand  [32]byte
-}
-
-func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint64) (*[]Challenge, error) {
+func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint64) []PoR.Challenge {
 	if proveNum > fileBlockNum {
 		fileBlockNum = proveNum
 	}
-	challenge := make([]Challenge, proveNum)
+	challenge := make([]PoR.Challenge, proveNum)
 	blockHash := hash.ToArray()
 
 	blockNumPerPart := fileBlockNum / (proveNum - 1)
@@ -52,5 +49,5 @@ func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint64) (*[]Challe
 		hashIndex++
 		hashIndex = hashIndex % common.UINT256_SIZE
 	}
-	return &challenge, nil
+	return challenge
 }
