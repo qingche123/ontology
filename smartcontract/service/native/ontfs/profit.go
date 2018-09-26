@@ -186,6 +186,7 @@ func FsReadFilePledge(native *native.NativeService) ([]byte, error){
 	ont.AddNotifications(native, contract, &state)
 
 	fileReadPledge.Id = 0
+	fileReadPledge.RestValue = fileReadPledge.TotalValue
 	fileInfo, err := getFsFileInfo(native, fileReadPledge.FileHash)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge getFsFileInfo error!")
