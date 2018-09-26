@@ -59,7 +59,7 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
 	}
 
-	pledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerHourPreserve * fsNodeInfo.Volume
+	pledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerBlock * fsNodeInfo.Volume
 	state := ont.State{From: fsNodeInfo.WalletAddr, To: contract, Value: pledge}
 	err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
 	if err != nil {
@@ -126,7 +126,7 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeUpdate getFsNodeInfo error!")
 	}
 
-	newPledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerHourPreserve * newFsNodeInfo.Volume
+	newPledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerBlock * newFsNodeInfo.Volume
 	if newFsNodeInfo.WalletAddr != oldFsNodeInfo.WalletAddr {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeInfo walletAddr changed!")
 	}
@@ -320,7 +320,7 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	utils.PutBytes(native, proveDetailsKey, proveDetailsBuff.Bytes())
 
 	//transfer profit
-	profit := (fsSetting.GasPerKBPerHourPreserve*fileInfo.ChallengeRate + fsSetting.GasForChallenge) * fsSetting.FsGasPrice
+	profit := (fsSetting.GasPerKBPerBlock*fileInfo.ChallengeRate + fsSetting.GasForChallenge) * fsSetting.FsGasPrice
 	state := ont.State{From: contract, To: fileProve.WalletAddr, Value: profit}
 	err = appCallTransfer(native, utils.OngContractAddress, contract, fileProve.WalletAddr, profit)
 	if err != nil {
@@ -449,36 +449,6 @@ func getFileReadPledge(native *native.NativeService, fileHash []byte) (*FileRead
 		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FileReadPledge deserialize error!")
 	}
 	return &fileReadPledge, nil
-}
-
-func getFsSetting(native *native.NativeService) (*FsSetting, error) {
-	contract := native.ContextRef.CurrentContext().ContractAddress
-
-	var fsSetting FsSetting
-	fsSettingKey := GenFsSettingKey(contract)
-
-	item, err := utils.GetStorageItem(native, fsSettingKey)
-	if err != nil {
-		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFsSetting error!")
-	}
-	if item == nil {
-		return nil, fmt.Errorf("[FS Govern] Not found fsSetting")
-	}
-	settingSource := common.NewZeroCopySource(item.Value)
-	if err := fsSetting.Deserialization(settingSource); err != nil {
-		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsSetting Deserialization error!")
-	}
-	return &fsSetting, nil
-}
-
-func setFsSetting(native *native.NativeService, fsSetting FsSetting) {
-	contract := native.ContextRef.CurrentContext().ContractAddress
-
-	info := new(bytes.Buffer)
-	fsSetting.Serialize(info)
-
-	fsSettingKey := GenFsSettingKey(contract)
-	utils.PutBytes(native, fsSettingKey, info.Bytes())
 }
 
 func nodeListOperate(native *native.NativeService, walletAddr common.Address, isAdd bool) error {

@@ -28,9 +28,8 @@ import (
 type FileInfo struct {
 	FileHash       []byte
 	UserAddr       common.Address
-	KeeyHours      uint64
 	FileBlockNum   uint64
-	FIleBlockSize  uint64
+	FileBlockSize  uint64
 	ChallengeRate  uint64
 	ChallengeTimes uint64
 	CopyNum        uint64
@@ -47,13 +46,10 @@ func (this *FileInfo) Serialize(w io.Writer) error {
 	if err := utils.WriteAddress(w, this.UserAddr); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
-	if err := utils.WriteVarUint(w, this.KeeyHours); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
-	}
 	if err := utils.WriteVarUint(w, this.FileBlockNum); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
-	if err := utils.WriteVarUint(w, this.FIleBlockSize); err != nil {
+	if err := utils.WriteVarUint(w, this.FileBlockSize); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	if err := utils.WriteVarUint(w, this.ChallengeRate); err != nil {
@@ -88,13 +84,10 @@ func (this *FileInfo) Deserialize(r io.Reader) error {
 	if this.UserAddr, err = utils.ReadAddress(r); err != nil {
 		return fmt.Errorf("[FileInfo] deserialize from error:%v", err)
 	}
-	if this.KeeyHours, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
-	}
 	if this.FileBlockNum, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
-	if this.FIleBlockSize, err = utils.ReadVarUint(r); err != nil {
+	if this.FileBlockSize, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
 	}
 	if this.ChallengeRate, err = utils.ReadVarUint(r); err != nil {
@@ -124,9 +117,8 @@ func (this *FileInfo) Deserialize(r io.Reader) error {
 func (this *FileInfo) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeBytes(sink, this.FileHash[:])
 	utils.EncodeAddress(sink, this.UserAddr)
-	utils.EncodeVarUint(sink, this.KeeyHours)
 	utils.EncodeVarUint(sink, this.FileBlockNum)
-	utils.EncodeVarUint(sink, this.FIleBlockSize)
+	utils.EncodeVarUint(sink, this.FileBlockSize)
 	utils.EncodeVarUint(sink, this.ChallengeRate)
 	utils.EncodeVarUint(sink, this.ChallengeTimes)
 	utils.EncodeVarUint(sink, this.CopyNum)
@@ -146,15 +138,11 @@ func (this *FileInfo) Deserialization(source *common.ZeroCopySource) error {
 	if err != nil {
 		return err
 	}
-	this.KeeyHours, err = utils.DecodeVarUint(source)
-	if err != nil {
-		return err
-	}
 	this.FileBlockNum, err = utils.DecodeVarUint(source)
 	if err != nil {
 		return err
 	}
-	this.FIleBlockSize, err = utils.DecodeVarUint(source)
+	this.FileBlockSize, err = utils.DecodeVarUint(source)
 	if err != nil {
 		return err
 	}

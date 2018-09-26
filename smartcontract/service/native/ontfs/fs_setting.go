@@ -26,17 +26,17 @@ import (
 )
 
 type FsSetting struct {
-	FsGasPrice              uint64
-	GasPerKBPerHourPreserve uint64
-	GasPerKBForRead         uint64
-	GasForChallenge         uint64
+	FsGasPrice       uint64
+	GasPerKBPerBlock uint64		//for store file
+	GasPerKBForRead  uint64		//for read file
+	GasForChallenge  uint64		//for challenge
 }
 
 func (this *FsSetting) Serialize(w io.Writer) error {
 	if err := utils.WriteVarUint(w, this.FsGasPrice); err != nil {
 		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
 	}
-	if err := utils.WriteVarUint(w, this.GasPerKBPerHourPreserve); err != nil {
+	if err := utils.WriteVarUint(w, this.GasPerKBPerBlock); err != nil {
 		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
 	}
 	if err := utils.WriteVarUint(w, this.GasPerKBForRead); err != nil {
@@ -53,7 +53,7 @@ func (this *FsSetting) Deserialize(r io.Reader) error {
 	if this.FsGasPrice, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
 	}
-	if this.GasPerKBPerHourPreserve, err = utils.ReadVarUint(r); err != nil {
+	if this.GasPerKBPerBlock, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
 	}
 	if this.GasPerKBForRead, err = utils.ReadVarUint(r); err != nil {
@@ -67,7 +67,7 @@ func (this *FsSetting) Deserialize(r io.Reader) error {
 
 func (this *FsSetting) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeVarUint(sink, this.FsGasPrice)
-	utils.EncodeVarUint(sink, this.GasPerKBPerHourPreserve)
+	utils.EncodeVarUint(sink, this.GasPerKBPerBlock)
 	utils.EncodeVarUint(sink, this.GasPerKBForRead)
 	utils.EncodeVarUint(sink, this.GasForChallenge)
 }
@@ -78,7 +78,7 @@ func (this *FsSetting) Deserialization(source *common.ZeroCopySource) error {
 	if err != nil {
 		return err
 	}
-	this.GasPerKBPerHourPreserve, err = utils.DecodeVarUint(source)
+	this.GasPerKBPerBlock, err = utils.DecodeVarUint(source)
 	if err != nil {
 		return err
 	}

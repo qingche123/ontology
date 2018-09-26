@@ -90,7 +90,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile getFsSetting error!")
 	}
 
-	fileInfo.Deposit = (fileInfo.FileBlockNum*fileInfo.FIleBlockSize*set.GasPerKBPerHourPreserve +
+	fileInfo.Deposit = (fileInfo.FileBlockNum*fileInfo.FileBlockSize*set.GasPerKBPerBlock +
 		fileInfo.ChallengeRate*fileInfo.ChallengeTimes*set.GasForChallenge) *
 		fileInfo.CopyNum * set.FsGasPrice
 
@@ -196,7 +196,7 @@ func FsReadFilePledge(native *native.NativeService) ([]byte, error){
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge getFsSetting error!")
 	}
 
-	readMinFee := fileInfo.FileBlockNum * fileInfo.FIleBlockSize * fsSetting.FsGasPrice * fsSetting.GasPerKBForRead
+	readMinFee := fileInfo.FileBlockNum * fileInfo.FileBlockSize * fsSetting.FsGasPrice * fsSetting.GasPerKBForRead
 	if fileReadPledge.TotalValue < readMinFee {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsReadFilePledge insufficient pay!")
 	}

@@ -23,8 +23,7 @@ import (
 )
 
 const (
-	FS_SET                     = "FsSet"
-	FS_SET_INIT                = "FsSettingInit"
+	FS_INIT                    = "FsInit"
 	FS_GETSETTING              = "FsGetSetting"
 	FS_NODE_REGISTER           = "FsNodeRegister"
 	FS_NODE_QUERY              = "FsNodeQuery"

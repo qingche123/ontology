@@ -33,9 +33,8 @@ func TestFileInfo_Serialize(t *testing.T) {
 	fileInfo := FileInfo{
 		FileHash:       fileHashStr,
 		UserAddr:       addr,
-		KeeyHours:      1,
 		FileBlockNum:   2,
-		FIleBlockSize:  3,
+		FileBlockSize:  3,
 		ChallengeRate:  4,
 		ChallengeTimes: 5,
 		CopyNum:        6,
@@ -57,9 +56,8 @@ func TestFileInfo_Serialize(t *testing.T) {
 
 	fmt.Println(string(fileInfo2.FileHash[:]))
 	fmt.Println(string(fileInfo2.UserAddr[:]))
-	fmt.Println(fileInfo2.KeeyHours)
 	fmt.Println(fileInfo2.FileBlockNum)
-	fmt.Println(fileInfo2.FIleBlockSize)
+	fmt.Println(fileInfo2.FileBlockSize)
 	fmt.Println(fileInfo2.ChallengeRate)
 	fmt.Println(fileInfo2.ChallengeTimes)
 	fmt.Println(fileInfo2.CopyNum)
