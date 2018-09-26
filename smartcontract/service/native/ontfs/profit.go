@@ -98,7 +98,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	if native.ContextRef.CheckWitness(state.From) == false {
 		return utils.BYTE_FALSE, errors.NewErr("FS Profit] CheckWitness failed!")
 	}
-	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
+	err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] appCallTransferOnt, ont transfer error!")
 	}
@@ -179,7 +179,7 @@ func FsReadFilePledge(native *native.NativeService) ([]byte, error){
 	if native.ContextRef.CheckWitness(state.From) == false {
 		return utils.BYTE_FALSE, errors.NewErr("FS Profit] CheckWitness failed!")
 	}
-	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
+	err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] appCallTransferOnt, ont transfer error!")
 	}

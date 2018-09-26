@@ -61,7 +61,7 @@ func FsNodeRegister(native *native.NativeService) ([]byte, error) {
 
 	pledge := fsSetting.FsGasPrice * fsSetting.GasPerKBPerHourPreserve * fsNodeInfo.Volume
 	state := ont.State{From: fsNodeInfo.WalletAddr, To: contract, Value: pledge}
-	err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
+	err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] appCallTransferOnt, ont transfer error!")
 	}
@@ -138,7 +138,7 @@ func FsNodeUpdate(native *native.NativeService) ([]byte, error) {
 		state = ont.State{From: newFsNodeInfo.WalletAddr, To: contract, Value: newPledge - oldFsNodeInfo.Pledge}
 	}
 	if newPledge != oldFsNodeInfo.Pledge {
-		err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
+		err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] appCallTransferOnt, ont transfer error!")
 		}
@@ -175,7 +175,7 @@ func FsNodeCancel(native *native.NativeService) ([]byte, error) {
 
 	if fsNodeInfo.Pledge > 0 {
 		state := ont.State{From: contract, To: fsNodeInfo.WalletAddr, Value: fsNodeInfo.Pledge + fsNodeInfo.Profit}
-		err = appCallTransfer(native, utils.OntContractAddress, state.From, state.To, state.Value)
+		err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
 		}
@@ -212,7 +212,7 @@ func FsNodeWithDrawProfit(native *native.NativeService) ([]byte, error) {
 
 	if fsNodeInfo.Profit > 0 {
 		state := ont.State{From: contract, To: fsNodeInfo.WalletAddr, Value: fsNodeInfo.Profit}
-		err = appCallTransfer(native, utils.OntContractAddress, contract, fsNodeInfo.WalletAddr, fsNodeInfo.Profit)
+		err = appCallTransfer(native, utils.OngContractAddress, contract, fsNodeInfo.WalletAddr, fsNodeInfo.Profit)
 		if err != nil {
 			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsNodeCancel appCallTransferOnt, ont transfer error!")
 		}
@@ -322,7 +322,7 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	//transfer profit
 	profit := (fsSetting.GasPerKBPerHourPreserve*fileInfo.ChallengeRate + fsSetting.GasForChallenge) * fsSetting.FsGasPrice
 	state := ont.State{From: contract, To: fileProve.WalletAddr, Value: profit}
-	err = appCallTransfer(native, utils.OntContractAddress, contract, fileProve.WalletAddr, profit)
+	err = appCallTransfer(native, utils.OngContractAddress, contract, fileProve.WalletAddr, profit)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve appCallTransferOnt, ont transfer error!")
 	}

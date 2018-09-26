@@ -19,7 +19,6 @@
 package ontfs
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 
@@ -68,7 +67,6 @@ func (this *ProveDetail) Deserialize(r io.Reader) error {
 
 func (this *FsProveDetails) Serialize(w io.Writer) error {
 	var err error
-	bf := new(bytes.Buffer)
 	if err = utils.WriteVarUint(w, this.CopyNum); err != nil {
 		return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
 	}
@@ -76,7 +74,7 @@ func (this *FsProveDetails) Serialize(w io.Writer) error {
 		return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
 	}
 	for _, v := range this.ProveDetails {
-		err = v.Serialize(bf)
+		err = v.Serialize(w)
 		if err != nil {
 			return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
 		}
