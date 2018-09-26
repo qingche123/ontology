@@ -356,7 +356,7 @@ func FsFileReadProfitSettle(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetFileReadPledge error!")
 	}
 
-	if fileReadPledge.Id <= settleSlice.SliceId {
+	if fileReadPledge.Id >= settleSlice.SliceId {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle id error!")
 	}
 	if  fileReadPledge.FromAddr != settleSlice.PayFrom {
@@ -370,16 +370,26 @@ func FsFileReadProfitSettle(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle FileReadSettleSlice verify failed!")
 	}
 
+	fileInfo, err := getFsFileInfo(native, fileReadPledge.FileHash)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle getFsFileInfo error!")
+	}
+
 	fileReadPledge.Id = settleSlice.SliceId
 	valueChange := settleSlice.SlicePay - (fileReadPledge.TotalValue - fileReadPledge.RestValue)
 	fileReadPledge.RestValue -= valueChange
-	bf := new(bytes.Buffer)
-	err = fileReadPledge.Serialize(bf)
-	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsReadFilePledge serialize error!")
-	}
+
 	key := GenFsFileReadPledgeKey(contract, fileReadPledge.FileHash)
-	utils.PutBytes(native, key, bf.Bytes())
+	if fileReadPledge.RestValue == 0 && fileInfo.FileBlockNum == fileReadPledge.Id{
+		utils.DelStorageItem(native, key)
+	} else {
+		bf := new(bytes.Buffer)
+		err = fileReadPledge.Serialize(bf)
+		if err != nil {
+			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsReadFilePledge serialize error!")
+		}
+		utils.PutBytes(native, key, bf.Bytes())
+	}
 
 	fsNodeInfo, err := getFsNodeInfo(native, settleSlice.PayTo)
 	if err != nil {
