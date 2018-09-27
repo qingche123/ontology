@@ -334,7 +334,8 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	if err = fileInfo.Serialize(bf); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileProve fileInfo serialize error!")
 	}
-	utils.PutBytes(native, fileInfo.FileHash[:], bf.Bytes())
+	fileInfoKey := GenFsFileInfoKey(contract, fileInfo.FileHash)
+	utils.PutBytes(native, fileInfoKey, bf.Bytes())
 	return utils.BYTE_TRUE, nil
 }
 

@@ -44,6 +44,7 @@ const (
 	ONTFS_SETTING          = "ontfssetting"
 	ONTFS_NODE_INFO        = "ontfsnodeInfo"
 	ONTFS_NODE_SET         = "ontfsnodeset"
+	ONTFS_FILE_INFO        = "ontfsfileinfo"
 	ONTFS_FILE_PROVE       = "ontfsfileprove"
 	ONTFS_FILE_READ_PLEDGE = "ontfsfileprove"
 )
@@ -59,6 +60,11 @@ func GenFsNodeInfoKey(contract common.Address, walletAddr common.Address) []byte
 
 func GenFsNodeSetKey(contract common.Address) []byte {
 	return append(contract[:], ONTFS_NODE_SET...)
+}
+
+func GenFsFileInfoKey(contract common.Address, fileHash []byte) []byte {
+	key := append(contract[:], ONTFS_FILE_INFO...)
+	return append(key, fileHash[:]...)
 }
 
 func GenFsProveDetailsKey(contract common.Address, fileHash []byte) []byte {

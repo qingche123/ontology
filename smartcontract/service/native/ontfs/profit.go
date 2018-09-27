@@ -77,7 +77,8 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile deserialize error!")
 	}
 
-	item, err := utils.GetStorageItem(native, fileInfo.FileHash[:])
+	fileInfoKey := GenFsFileInfoKey(contract, fileInfo.FileHash)
+	item, err := utils.GetStorageItem(native, fileInfoKey)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] GetStorageItem error!")
 	}
@@ -111,7 +112,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	if err = fileInfo.Serialize(bf); err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile fileInfo serialize error!")
 	}
-	utils.PutBytes(native, fileInfo.FileHash[:], bf.Bytes())
+	utils.PutBytes(native, fileInfoKey, bf.Bytes())
 
 	var proveDetails FsProveDetails
 	proveDetails.CopyNum = fileInfo.CopyNum
@@ -127,12 +128,15 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 }
 
 func FsGetFileInfo(native *native.NativeService) ([]byte, error) {
+	contract := native.ContextRef.CurrentContext().ContractAddress
+
 	source := common.NewZeroCopySource(native.Input)
 	fileHash, err := utils.DecodeBytes(source)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo DecodeBytes error!")
 	}
-	item, err := utils.GetStorageItem(native, fileHash)
+	fileInfoKey := GenFsFileInfoKey(contract, fileHash)
+	item, err := utils.GetStorageItem(native, fileInfoKey)
 	if err != nil {
 		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo GetStorageItem error!")
 	}
@@ -218,11 +222,18 @@ func FsDeleteFile(native *native.NativeService) ([]byte, error) {
 	source := common.NewZeroCopySource(native.Input)
 	fileHash, err := utils.DecodeBytes(source)
 	if err != nil {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileInfo DecodeBytes error!")
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsDeleteFile DecodeBytes error!")
 	}
-	utils.DelStorageItem(native, fileHash[:])
+	fileInfo, err := getFsFileInfo(native, fileHash)
+	if fileInfo != nil {
+		fileInfoKey := GenFsFileInfoKey(contract, fileHash)
+		utils.DelStorageItem(native, fileInfoKey)
+	}
 	proveDetailsKey := GenFsProveDetailsKey(contract, fileHash)
-	utils.DelStorageItem(native, proveDetailsKey)
+	item, err := utils.GetStorageItem(native, proveDetailsKey)
+	if item != nil {
+		utils.DelStorageItem(native, proveDetailsKey)
+	}
 	return utils.BYTE_TRUE, nil
 }
 
@@ -247,7 +258,9 @@ func getReadFilePledge(native *native.NativeService, fileHash []byte) (*FileRead
 }
 
 func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, error) {
-	item, err := utils.GetStorageItem(native, fileHash)
+	contract := native.ContextRef.CurrentContext().ContractAddress
+	fileInfoKey := GenFsFileInfoKey(contract, fileHash)
+	item, err := utils.GetStorageItem(native, fileInfoKey)
 	if err != nil {
 		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo GetStorageItem error!")
 	}
@@ -262,21 +275,4 @@ func getFsFileInfo(native *native.NativeService, fileHash []byte) (*FileInfo, er
 		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsFileInfo deserialize error!")
 	}
 	return &fsFileInfo, nil
-}
-
-func getFsFileProveDetail(native *native.NativeService, fileHash []byte) (*ProveDetail, error) {
-	item, err := utils.GetStorageItem(native, fileHash)
-	if err != nil {
-		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] ProveDetail GetStorageItem error!")
-	}
-	if item == nil {
-		return nil, errors.NewErr("[FS Profit] FsFileInfo not found!")
-	}
-	reader := bytes.NewReader(item.Value)
-	var fileProveDetail ProveDetail
-	err = fileProveDetail.Deserialize(reader)
-	if err != nil {
-		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] ProveDetail deserialize error!")
-	}
-	return &fileProveDetail, nil
 }
