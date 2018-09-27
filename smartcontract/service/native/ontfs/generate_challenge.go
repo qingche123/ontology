@@ -26,9 +26,12 @@ import (
 )
 
 func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint64) []PoR.Challenge {
-	if proveNum > fileBlockNum {
-		fileBlockNum = proveNum
+	if fileBlockNum <= 3 {
+		proveNum = 3
+	} else if fileBlockNum > 3 && fileBlockNum < proveNum {
+		proveNum = fileBlockNum / 3
 	}
+
 	challenge := make([]PoR.Challenge, proveNum)
 	blockHash := hash.ToArray()
 
