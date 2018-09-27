@@ -226,6 +226,9 @@ func FsDeleteFile(native *native.NativeService) ([]byte, error) {
 	}
 	fileInfo, err := getFsFileInfo(native, fileHash)
 	if fileInfo != nil {
+		if native.ContextRef.CheckWitness(fileInfo.UserAddr) == false {
+			return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsDeleteFile CheckWitness failed!")
+		}
 		fileInfoKey := GenFsFileInfoKey(contract, fileHash)
 		utils.DelStorageItem(native, fileInfoKey)
 	}
