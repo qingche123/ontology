@@ -306,9 +306,9 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] GetHeaderByHeight error!")
 	}
 	blockHash := header.Hash()
-	challenge := GenChallenge(blockHash, fileInfo.FileBlockNum, fileInfo.ProveBlockNum)
+	challenge := GenChallenge(blockHash, uint32(fileInfo.FileBlockNum), uint32(fileInfo.ProveBlockNum))
 
-	ret := PoR.VerifyX(pp.G, pp.G0, pp.PubKey, string(pp.FileId), fileProve.MultiRes, string(fileProve.AddRes), challenge)
+	ret := PoR.Verify(pp.G, pp.G0, pp.PubKey, fileProve.MultiRes, string(fileProve.AddRes), string(pp.FileId), challenge, string(pp.Paring))
 	if !ret {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] ProveData Verify failed!")
 	}

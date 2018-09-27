@@ -56,6 +56,7 @@ type ProveParam struct {
 	PubKey   []byte
 	FileId   []byte
 	R        []byte
+	Paring   []byte
 }
 
 func (this *ProveParam) Serialize(w io.Writer) error {
@@ -72,6 +73,9 @@ func (this *ProveParam) Serialize(w io.Writer) error {
 		return fmt.Errorf("[ProveParam] serialize from error:%v", err)
 	}
 	if err := utils.WriteBytes(w, this.R); err != nil {
+		return fmt.Errorf("[ProveParam] serialize from error:%v", err)
+	}
+	if err := utils.WriteBytes(w, this.Paring); err != nil {
 		return fmt.Errorf("[ProveParam] serialize from error:%v", err)
 	}
 	return nil
@@ -92,6 +96,9 @@ func (this *ProveParam) Deserialize(r io.Reader) error {
 		return fmt.Errorf("[ProveParam] deserialize from error:%v", err)
 	}
 	if this.R, err = utils.ReadBytes(r); err != nil {
+		return fmt.Errorf("[ProveParam] deserialize from error:%v", err)
+	}
+	if this.Paring, err = utils.ReadBytes(r); err != nil {
 		return fmt.Errorf("[ProveParam] deserialize from error:%v", err)
 	}
 	return nil
