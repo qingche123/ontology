@@ -27,9 +27,10 @@ import (
 
 type FsSetting struct {
 	FsGasPrice       uint64
-	GasPerKBPerBlock uint64		//for store file
-	GasPerKBForRead  uint64		//for read file
-	GasForChallenge  uint64		//for challenge
+	GasPerKBPerBlock uint64 //for store file
+	GasPerKBForRead  uint64 //for read file
+	GasForChallenge  uint64 //for challenge
+	MaxProveBlockNum uint64
 }
 
 func (this *FsSetting) Serialize(w io.Writer) error {
@@ -43,6 +44,9 @@ func (this *FsSetting) Serialize(w io.Writer) error {
 		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
 	}
 	if err := utils.WriteVarUint(w, this.GasForChallenge); err != nil {
+		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
+	}
+	if err := utils.WriteVarUint(w, this.MaxProveBlockNum); err != nil {
 		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
 	}
 	return nil
@@ -62,6 +66,9 @@ func (this *FsSetting) Deserialize(r io.Reader) error {
 	if this.GasForChallenge, err = utils.ReadVarUint(r); err != nil {
 		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
 	}
+	if this.MaxProveBlockNum, err = utils.ReadVarUint(r); err != nil {
+		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
+	}
 	return nil
 }
 
@@ -70,6 +77,7 @@ func (this *FsSetting) Serialization(sink *common.ZeroCopySink) {
 	utils.EncodeVarUint(sink, this.GasPerKBPerBlock)
 	utils.EncodeVarUint(sink, this.GasPerKBForRead)
 	utils.EncodeVarUint(sink, this.GasForChallenge)
+	utils.EncodeVarUint(sink, this.MaxProveBlockNum)
 }
 
 func (this *FsSetting) Deserialization(source *common.ZeroCopySource) error {
@@ -87,5 +95,9 @@ func (this *FsSetting) Deserialization(source *common.ZeroCopySource) error {
 		return err
 	}
 	this.GasForChallenge, err = utils.DecodeVarUint(source)
+	if err != nil {
+		return err
+	}
+	this.MaxProveBlockNum, err = utils.DecodeVarUint(source)
 	return err
 }

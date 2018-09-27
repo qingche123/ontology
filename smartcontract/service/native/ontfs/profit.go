@@ -86,14 +86,14 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewErr("[FS Profit] File have stored!")
 	}
 
-	set, err := getFsSetting(native)
+	fsSetting, err := getFsSetting(native)
 	if err != nil {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsStoreFile getFsSetting error!")
 	}
 
-	fileInfo.Deposit = (fileInfo.FileBlockNum*fileInfo.FileBlockSize*set.GasPerKBPerBlock +
-		fileInfo.ChallengeRate*fileInfo.ChallengeTimes*set.GasForChallenge) *
-		fileInfo.CopyNum * set.FsGasPrice
+	fileInfo.Deposit = (fileInfo.FileBlockNum*fileInfo.FileBlockSize*fsSetting.GasPerKBPerBlock +
+		fileInfo.ChallengeRate*fileInfo.ChallengeTimes*fsSetting.GasForChallenge) *
+		fileInfo.CopyNum * fsSetting.FsGasPrice
 
 	state := ont.State{From: fileInfo.UserAddr, To: contract, Value: fileInfo.Deposit}
 	if native.ContextRef.CheckWitness(state.From) == false {
@@ -105,7 +105,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 	}
 	ont.AddNotifications(native, contract, &state)
 
-	fileInfo.ProveBlockNum = 32
+	fileInfo.ProveBlockNum = fsSetting.MaxProveBlockNum
 	fileInfo.BlockHeight = uint64(native.Height)
 
 	bf := new(bytes.Buffer)

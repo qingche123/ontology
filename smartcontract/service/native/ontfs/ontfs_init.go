@@ -85,6 +85,7 @@ func getFsSetting(native *native.NativeService) (*FsSetting, error) {
 			GasPerKBPerBlock: 1,
 			GasPerKBForRead:  1,
 			GasForChallenge:  1,
+			MaxProveBlockNum: 32,
 		}
 		return &fsSetting, nil
 	}
