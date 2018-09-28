@@ -24,28 +24,37 @@ import (
 )
 
 func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint32) []PoR.Challenge {
+	var blockNumPerPart, blockNumLastPart, blockNumOfPart uint32
+
 	if fileBlockNum <= 3 {
-		proveNum = 3
+		blockNumPerPart = 1
+		blockNumLastPart = 1
+		blockNumOfPart = 1
+		proveNum = fileBlockNum
 	} else if fileBlockNum > 3 && fileBlockNum < proveNum {
-		proveNum = fileBlockNum / 3
+		proveNum = (fileBlockNum + 3) / 3
+		blockNumPerPart = (fileBlockNum / proveNum) + 1
+		blockNumLastPart = fileBlockNum % blockNumPerPart
+		blockNumOfPart = blockNumPerPart
+	} else {
+		blockNumPerPart = fileBlockNum / (proveNum - 1)
+		blockNumLastPart = fileBlockNum % (proveNum - 1)
+		blockNumOfPart = blockNumPerPart
 	}
 
 	challenge := make([]PoR.Challenge, proveNum)
 	blockHash := hash.ToArray()
 
-	blockNumPerPart := fileBlockNum / (proveNum - 1)
-	blockNumLastPart := fileBlockNum % (proveNum - 1)
-	blockNumOfPart := blockNumPerPart
-
 	var hashIndex = 0
 	var i uint32
-	for i = 0; i < proveNum; i++ {
-		if i == proveNum-1 {
+
+	for i = 1; i <= proveNum; i++ {
+		if i == proveNum && blockNumLastPart != 0{
 			blockNumOfPart = blockNumLastPart
 		}
-		challenge[i].Index = uint32(blockHash[hashIndex]) % blockNumOfPart + i*blockNumPerPart
-		challenge[i].Rand = uint32(blockHash[hashIndex] & byte(i))
 
+		challenge[i-1].Index = (uint32(blockHash[hashIndex]) +1)% blockNumOfPart + i*blockNumPerPart
+		challenge[i-1].Rand = uint32(blockHash[hashIndex]) + 1
 		hashIndex++
 		hashIndex = hashIndex % common.UINT256_SIZE
 	}
