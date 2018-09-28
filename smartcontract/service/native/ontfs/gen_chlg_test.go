@@ -36,6 +36,8 @@ func TestGenChallenge(t *testing.T) {
 
 	for fileBlockNum := 1; fileBlockNum < 128; fileBlockNum++  {
 		challenge := GenChallenge(hash, uint32(fileBlockNum), 32)
-		fmt.Println(challenge)
+		fmt.Printf("==========FileBlockNum: %d, ChallengeLength:%d========\n",
+			fileBlockNum, len(challenge))
+		//fmt.Println(challenge)
 	}
 }

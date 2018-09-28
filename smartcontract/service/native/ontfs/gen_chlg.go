@@ -36,6 +36,9 @@ func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint32) []PoR.Chal
 		blockNumPerPart = (fileBlockNum / proveNum) + 1
 		blockNumLastPart = fileBlockNum % blockNumPerPart
 		blockNumOfPart = blockNumPerPart
+		if blockNumLastPart == 0{
+			proveNum--
+		}
 	} else {
 		blockNumPerPart = fileBlockNum / (proveNum - 1)
 		blockNumLastPart = fileBlockNum % (proveNum - 1)
