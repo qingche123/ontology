@@ -271,7 +271,7 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve ProveDetails deserialize error!")
 	}
 
-	var found bool
+	found := false
 	for i := 0; uint64(i) < proveDetails.ProveDetailNum; i++ {
 		if proveDetails.ProveDetails[i].WalletAddr == fileProve.WalletAddr {
 			if proveDetails.ProveDetails[i].ProveTimes == fileInfo.ChallengeTimes {
@@ -328,6 +328,9 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	}
 	ont.AddNotifications(native, contract, &state)
 
+	if fileInfo.Deposit < profit {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileProve Deposit < Profit, balance error!")
+	}
 	fileInfo.Deposit -= profit
 
 	bf := new(bytes.Buffer)
@@ -378,6 +381,9 @@ func FsFileReadProfitSettle(native *native.NativeService) ([]byte, error) {
 
 	fileReadPledge.Id = settleSlice.SliceId
 	valueChange := settleSlice.SlicePay - (fileReadPledge.TotalValue - fileReadPledge.RestValue)
+	if fileReadPledge.RestValue < valueChange {
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileReadProfitSettle RestValue < valueChange ")
+	}
 	fileReadPledge.RestValue -= valueChange
 
 	key := GenFsFileReadPledgeKey(contract, fileReadPledge.FileHash)
