@@ -275,11 +275,11 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	for i := 0; uint64(i) < proveDetails.ProveDetailNum; i++ {
 		if proveDetails.ProveDetails[i].WalletAddr == fileProve.WalletAddr {
 			if proveDetails.ProveDetails[i].ProveTimes == fileInfo.ChallengeTimes {
-				return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve Prove times reached limit!")
+				return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileProve Prove times reached limit!")
 			}
 			if !checkProveExpire(uint64(native.Height), proveDetails.ProveDetails[i].ProveTimes,
 				fileInfo.ChallengeRate, fileInfo.BlockHeight) {
-				return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve Prove out of date!")
+				return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileProve Prove out of date!")
 			}
 			proveDetails.ProveDetails[i].ProveTimes++
 			found = true
@@ -287,7 +287,7 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 	}
 	if !found {
 		if !checkProveExpire(uint64(native.Height), 0, fileInfo.ChallengeRate, fileInfo.BlockHeight) {
-			return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] FsFileProve Prove out of date!")
+			return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsFileProve Prove out of date!")
 		}
 		proveDetail := ProveDetail{nodeInfo.NodeAddr, nodeInfo.WalletAddr, 1}
 		proveDetails.ProveDetails = append(proveDetails.ProveDetails, proveDetail)
@@ -310,7 +310,7 @@ func FsFileProve(native *native.NativeService) ([]byte, error) {
 
 	ret := PoR.Verify(pp.G, pp.G0, pp.PubKey, fileProve.MultiRes, string(fileProve.AddRes), string(pp.FileId), challenge, string(pp.Paring))
 	if !ret {
-		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Govern] ProveData Verify failed!")
+		return utils.BYTE_FALSE, errors.NewErr("[FS Govern] ProveData Verify failed!")
 	}
 
 	proveDetailsBuff := new(bytes.Buffer)
