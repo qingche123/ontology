@@ -93,7 +93,7 @@ func FsStoreFile(native *native.NativeService) ([]byte, error) {
 
 	fileInfo.Deposit = (fileInfo.FileBlockNum*fileInfo.FileBlockSize*fsSetting.GasPerKBPerBlock +
 		fileInfo.ChallengeRate*fileInfo.ChallengeTimes*fsSetting.GasForChallenge) *
-		fileInfo.CopyNum * fsSetting.FsGasPrice
+		(fileInfo.CopyNum + 1) * fsSetting.FsGasPrice
 
 	state := ont.State{From: fileInfo.UserAddr, To: contract, Value: fileInfo.Deposit}
 	if native.ContextRef.CheckWitness(state.From) == false {
