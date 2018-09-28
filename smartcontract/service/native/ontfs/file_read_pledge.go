@@ -35,23 +35,23 @@ type FileReadPledge struct {
 }
 
 func (this *FileReadPledge) Serialize(w io.Writer) error {
-	if err := utils.WriteBytes(w, this.FileHash[:]); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+	if err := utils.WriteBytes(w, this.FileHash); err != nil {
+		return fmt.Errorf("[FileReadPledge] [FileHash:%v] serialize from error:%v", this.FileHash, err)
 	}
 	if err := utils.WriteAddress(w, this.ReadAddr); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [ReadAddr:%v] serialize from error:%v", this.ReadAddr, err)
 	}
 	if err := utils.WriteAddress(w, this.FromAddr); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [FromAddr:%v] serialize from error:%v", this.FromAddr, err)
 	}
 	if err := utils.WriteVarUint(w, this.Id); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [Id:%v] serialize from error:%v", this.Id, err)
 	}
 	if err := utils.WriteVarUint(w, this.TotalValue); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [TotalValue:%v] serialize from error:%v", this.TotalValue, err)
 	}
 	if err := utils.WriteVarUint(w, this.RestValue); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [RestValue:%v] serialize from error:%v", this.RestValue, err)
 	}
 	return nil
 }
@@ -59,22 +59,22 @@ func (this *FileReadPledge) Serialize(w io.Writer) error {
 func (this *FileReadPledge) Deserialize(r io.Reader) error {
 	var err error
 	if this.FileHash, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [FileHash] deserialize from error:%v", err)
 	}
 	if this.ReadAddr, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [ReadAddr] deserialize from error:%v", err)
 	}
 	if this.FromAddr, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [FromAddr] deserialize from error:%v", err)
 	}
 	if this.Id, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [Id] deserialize from error:%v", err)
 	}
 	if this.TotalValue, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [TotalValue] deserialize from error:%v", err)
 	}
 	if this.RestValue, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [RestValue] deserialize from error:%v", err)
 	}
 	return nil
 }

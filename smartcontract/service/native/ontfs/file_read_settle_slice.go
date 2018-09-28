@@ -36,26 +36,26 @@ type FileReadSettleSlice struct {
 }
 
 func (this *FileReadSettleSlice) Serialize(w io.Writer) error {
-	if err := utils.WriteBytes(w, this.FileHash[:]); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+	if err := utils.WriteBytes(w, this.FileHash); err != nil {
+		return fmt.Errorf("[FileReadPledge] [FileHash:%v] serialize from error:%v", this.FileHash, err)
 	}
 	if err := utils.WriteAddress(w, this.PayFrom); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [PayFrom:%v] serialize from error:%v", this.PayFrom, err)
 	}
 	if err := utils.WriteAddress(w, this.PayTo); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [PayTo:%v] serialize from error:%v", this.PayTo, err)
 	}
 	if err := utils.WriteVarUint(w, this.SlicePay); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [SlicePay:%v] serialize from error:%v", this.SlicePay, err)
 	}
 	if err := utils.WriteVarUint(w, this.SliceId); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [SliceId:%v] serialize from error:%v", this.SliceId, err)
 	}
 	if err := utils.WriteBytes(w, this.Sig); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [Sig:%v] serialize from error:%v", this.Sig, err)
 	}
 	if err := utils.WriteBytes(w, this.PubKey); err != nil {
-		return fmt.Errorf("[FileReadPledge] serialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [PubKey:%v] serialize from error:%v", this.PubKey, err)
 	}
 	return nil
 }
@@ -63,25 +63,25 @@ func (this *FileReadSettleSlice) Serialize(w io.Writer) error {
 func (this *FileReadSettleSlice) Deserialize(r io.Reader) error {
 	var err error
 	if this.FileHash, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [FileHash] deserialize from error:%v", err)
 	}
 	if this.PayFrom, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [PayFrom] deserialize from error:%v", err)
 	}
 	if this.PayTo, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [PayTo] deserialize from error:%v", err)
 	}
 	if this.SlicePay, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [SlicePay] deserialize from error:%v", err)
 	}
 	if this.SliceId, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [SliceId] deserialize from error:%v", err)
 	}
 	if this.Sig, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [Sig] deserialize from error:%v", err)
 	}
 	if this.PubKey, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileReadPledge] deserialize from error:%v", err)
+		return fmt.Errorf("[FileReadPledge] [PubKey] deserialize from error:%v", err)
 	}
 	return nil
 }

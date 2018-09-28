@@ -39,14 +39,14 @@ type ProveDetail struct {
 }
 
 func (this *ProveDetail) Serialize(w io.Writer) error {
-	if err := utils.WriteBytes(w, this.NodeAddr[:]); err != nil {
-		return fmt.Errorf("[ProveNode] serialize from error:%v", err)
+	if err := utils.WriteBytes(w, this.NodeAddr); err != nil {
+		return fmt.Errorf("[ProveNode] [NodeAddr:%v] serialize from error:%v", this.NodeAddr, err)
 	}
 	if err := utils.WriteAddress(w, this.WalletAddr); err != nil {
-		return fmt.Errorf("[ProveNode] serialize from error:%v", err)
+		return fmt.Errorf("[ProveNode] [WalletAddr:%v] serialize from error:%v", this.WalletAddr, err)
 	}
 	if err := utils.WriteVarUint(w, this.ProveTimes); err != nil {
-		return fmt.Errorf("[ProveNode] serialize from error:%v", err)
+		return fmt.Errorf("[ProveNode] [ProveTimes:%v] serialize from error:%v", this.ProveTimes, err)
 	}
 	return nil
 }
@@ -54,13 +54,13 @@ func (this *ProveDetail) Serialize(w io.Writer) error {
 func (this *ProveDetail) Deserialize(r io.Reader) error {
 	var err error
 	if this.NodeAddr, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[ProveNode] deserialize from error:%v", err)
+		return fmt.Errorf("[ProveNode] [NodeAddr] deserialize from error:%v", err)
 	}
 	if this.WalletAddr, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[ProveNode] deserialize from error:%v", err)
+		return fmt.Errorf("[ProveNode] [WalletAddr] deserialize from error:%v", err)
 	}
 	if this.ProveTimes, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[ProveNode] deserialize from error:%v", err)
+		return fmt.Errorf("[ProveNode] [ProveTimes] deserialize from error:%v", err)
 	}
 	return nil
 }
@@ -68,15 +68,15 @@ func (this *ProveDetail) Deserialize(r io.Reader) error {
 func (this *FsProveDetails) Serialize(w io.Writer) error {
 	var err error
 	if err = utils.WriteVarUint(w, this.CopyNum); err != nil {
-		return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
+		return fmt.Errorf("[ProveDetail] [CopyNum:%v] serialize from error:%v", this.CopyNum, err)
 	}
 	if err = utils.WriteVarUint(w, this.ProveDetailNum); err != nil {
-		return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
+		return fmt.Errorf("[ProveDetail] [ProveDetailNum:%v] serialize from error:%v", this.ProveDetailNum, err)
 	}
 	for _, v := range this.ProveDetails {
 		err = v.Serialize(w)
 		if err != nil {
-			return fmt.Errorf("[ProveDetail] serialize from error:%v", err)
+			return fmt.Errorf("[ProveDetail] [ProveDetail] serialize from error:%v", err)
 		}
 	}
 	return nil
@@ -86,14 +86,14 @@ func (this *FsProveDetails) Deserialize(r io.Reader) error {
 	var err error
 	var tmpProveDetail ProveDetail
 	if this.CopyNum, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[ProveDetail] deserialize from error:%v", err)
+		return fmt.Errorf("[ProveDetail] [CopyNum] deserialize from error:%v", err)
 	}
 	if this.ProveDetailNum, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[ProveDetail] deserialize from error:%v", err)
+		return fmt.Errorf("[ProveDetail] [ProveDetailNum] deserialize from error:%v", err)
 	}
 	for i := 0; uint64(i) < this.ProveDetailNum; i++ {
 		if err = tmpProveDetail.Deserialize(r); err != nil {
-			return fmt.Errorf("[ProveDetail] deserialize from error:%v", err)
+			return fmt.Errorf("[ProveDetail] [ProveDetail] deserialize from error:%v", err)
 		}
 		this.ProveDetails = append(this.ProveDetails, tmpProveDetail)
 	}

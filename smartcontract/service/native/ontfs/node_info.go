@@ -41,25 +41,25 @@ type FsNodeInfo struct {
 
 func (this *FsNodeInfo) Serialize(w io.Writer) error {
 	if err := utils.WriteVarUint(w, this.Pledge); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [Pledge:%v] serialize from error:%v", this.Pledge, err)
 	}
 	if err := utils.WriteVarUint(w, this.Profit); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [Profit:%v] serialize from error:%v", this.Profit, err)
 	}
 	if err := utils.WriteVarUint(w, this.Volume); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [Volume:%v] serialize from error:%v", this.Volume, err)
 	}
 	if err := utils.WriteVarUint(w, this.RestVol); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [RestVol:%v] serialize from error:%v", this.RestVol, err)
 	}
 	if err := utils.WriteVarUint(w, this.ServiceTime); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [ServiceTime:%v] serialize from error:%v", this.ServiceTime, err)
 	}
 	if err := utils.WriteAddress(w, this.WalletAddr); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [WalletAddr:%v] serialize from error:%v", this.WalletAddr, err)
 	}
 	if err := utils.WriteBytes(w, this.NodeAddr); err != nil {
-		return fmt.Errorf("[FsNodeInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [NodeAddr:%v] serialize from error:%v", this.NodeAddr, err)
 	}
 	return nil
 }
@@ -67,25 +67,25 @@ func (this *FsNodeInfo) Serialize(w io.Writer) error {
 func (this *FsNodeInfo) Deserialize(r io.Reader) error {
 	var err error
 	if this.Pledge, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [Pledge] Deserialize from error:%v", err)
 	}
 	if this.Profit, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [Profit] Deserialize from error:%v", err)
 	}
 	if this.Volume, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [Volume] Deserialize from error:%v", err)
 	}
 	if this.RestVol, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [RestVol] Deserialize from error:%v", err)
 	}
 	if this.ServiceTime, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [ServiceTime] Deserialize from error:%v", err)
 	}
 	if this.WalletAddr, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [WalletAddr] Deserialize from error:%v", err)
 	}
 	if this.NodeAddr, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FsNodeInfo] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsNodeInfo] [NodeAddr] Deserialize from error:%v", err)
 	}
 	return nil
 }

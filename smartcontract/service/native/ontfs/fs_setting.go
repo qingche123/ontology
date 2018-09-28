@@ -35,19 +35,19 @@ type FsSetting struct {
 
 func (this *FsSetting) Serialize(w io.Writer) error {
 	if err := utils.WriteVarUint(w, this.FsGasPrice); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [FsGasPrice:%v] serialize from error:%v", this.FsGasPrice, err)
 	}
 	if err := utils.WriteVarUint(w, this.GasPerKBPerBlock); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [GasPerKBPerBlock:%v] serialize from error:%v", this.GasPerKBPerBlock, err)
 	}
 	if err := utils.WriteVarUint(w, this.GasPerKBForRead); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [GasPerKBForRead:%v] serialize from error:%v", this.GasPerKBForRead, err)
 	}
 	if err := utils.WriteVarUint(w, this.GasForChallenge); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [GasForChallenge:%v] serialize from error:%v", this.GasForChallenge, err)
 	}
 	if err := utils.WriteVarUint(w, this.MaxProveBlockNum); err != nil {
-		return fmt.Errorf("[FsSetting] serialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [MaxProveBlockNum:%v] serialize from error:%v", this.MaxProveBlockNum, err)
 	}
 	return nil
 }
@@ -55,19 +55,19 @@ func (this *FsSetting) Serialize(w io.Writer) error {
 func (this *FsSetting) Deserialize(r io.Reader) error {
 	var err error
 	if this.FsGasPrice, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [FsGasPrice] Deserialize from error:%v", err)
 	}
 	if this.GasPerKBPerBlock, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [GasPerKBPerBlock] Deserialize from error:%v", err)
 	}
 	if this.GasPerKBForRead, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [GasPerKBForRead] Deserialize from error:%v", err)
 	}
 	if this.GasForChallenge, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [GasForChallenge] Deserialize from error:%v", err)
 	}
 	if this.MaxProveBlockNum, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FsSetting] Deserialize from error:%v", err)
+		return fmt.Errorf("[FsSetting] [MaxProveBlockNum] Deserialize from error:%v", err)
 	}
 	return nil
 }

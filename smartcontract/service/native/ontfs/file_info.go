@@ -40,38 +40,38 @@ type FileInfo struct {
 }
 
 func (this *FileInfo) Serialize(w io.Writer) error {
-	if err := utils.WriteBytes(w, this.FileHash[:]); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+	if err := utils.WriteBytes(w, this.FileHash); err != nil {
+		return fmt.Errorf("[FileInfo] [FileHash:%v] serialize from error:%v", this.FileHash, err)
 	}
 	if err := utils.WriteAddress(w, this.UserAddr); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [UserAddr:%v] serialize from error:%v", this.UserAddr, err)
 	}
 	if err := utils.WriteVarUint(w, this.FileBlockNum); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [FileBlockNum:%v] serialize from error:%v", this.FileBlockNum, err)
 	}
 	if err := utils.WriteVarUint(w, this.FileBlockSize); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [FileBlockSize:%v] serialize from error:%v", this.FileBlockSize, err)
 	}
 	if err := utils.WriteVarUint(w, this.ChallengeRate); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [ChallengeRate:%v] serialize from error:%v", this.ChallengeRate, err)
 	}
 	if err := utils.WriteVarUint(w, this.ChallengeTimes); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [ChallengeTimes:%v] serialize from error:%v", this.ChallengeTimes, err)
 	}
 	if err := utils.WriteVarUint(w, this.CopyNum); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [CopyNum:%v] serialize from error:%v", this.CopyNum, err)
 	}
 	if err := utils.WriteVarUint(w, this.Deposit); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [Deposit:%v] serialize from error:%v", this.Deposit, err)
 	}
-	if err := utils.WriteBytes(w, this.FileProveParam[:]); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+	if err := utils.WriteBytes(w, this.FileProveParam); err != nil {
+		return fmt.Errorf("[FileInfo] [FileProveParam:%v] serialize from error:%v", this.FileProveParam, err)
 	}
 	if err := utils.WriteVarUint(w, this.ProveBlockNum); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [ProveBlockNum:%v] serialize from error:%v", this.ProveBlockNum, err)
 	}
 	if err := utils.WriteVarUint(w, this.BlockHeight); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [BlockHeight:%v] serialize from error:%v", this.BlockHeight, err)
 	}
 	return nil
 }
@@ -79,37 +79,37 @@ func (this *FileInfo) Serialize(w io.Writer) error {
 func (this *FileInfo) Deserialize(r io.Reader) error {
 	var err error
 	if this.FileHash, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileInfo] deserialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [FileHash] deserialize from error:%v", err)
 	}
 	if this.UserAddr, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FileInfo] deserialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [UserAddr] deserialize from error:%v", err)
 	}
 	if this.FileBlockNum, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [FileBlockNum] deserialize from error:%v", err)
 	}
 	if this.FileBlockSize, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [FileBlockSize] deserialize from error:%v", err)
 	}
 	if this.ChallengeRate, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [ChallengeRate] deserialize from error:%v", err)
 	}
 	if this.ChallengeTimes, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [ChallengeTimes] deserialize from error:%v", err)
 	}
 	if this.CopyNum, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [CopyNum] deserialize from error:%v", err)
 	}
 	if this.Deposit, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [Deposit] deserialize from error:%v", err)
 	}
 	if this.FileProveParam, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileInfo] deserialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [FileProveParam] deserialize from error:%v", err)
 	}
 	if this.ProveBlockNum, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [ProveBlockNum] deserialize from error:%v", err)
 	}
 	if this.BlockHeight, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileInfo] serialize from error:%v", err)
+		return fmt.Errorf("[FileInfo] [BlockHeight] deserialize from error:%v", err)
 	}
 	return nil
 }

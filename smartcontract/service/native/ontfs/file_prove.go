@@ -35,23 +35,23 @@ type FileProve struct {
 }
 
 func (this *FileProve) Serialize(w io.Writer) error {
-	if err := utils.WriteBytes(w, this.FileHash[:]); err != nil {
-		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+	if err := utils.WriteBytes(w, this.FileHash); err != nil {
+		return fmt.Errorf("[FileProve] [this.FileHash:%v] serialize from error:%v", this.FileHash, err)
 	}
 	if err := utils.WriteBytes(w, this.MultiRes); err != nil {
-		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [this.MultiRes:%v] serialize from error:%v", this.MultiRes, err)
 	}
 	if err := utils.WriteBytes(w, this.AddRes); err != nil {
-		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [this.AddRes:%v] serialize from error:%v", this.AddRes, err)
 	}
 	if err := utils.WriteVarUint(w, this.BlockHeight); err != nil {
-		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [this.BlockHeight:%v] serialize from error:%v", this.BlockHeight, err)
 	}
 	if err := utils.WriteAddress(w, this.WalletAddr); err != nil {
-		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [this.WalletAddr:%v] serialize from error:%v", this.WalletAddr, err)
 	}
 	if err := utils.WriteVarUint(w, this.Profit); err != nil {
-		return fmt.Errorf("[FileProve] serialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [this.Profit:%v] serialize from error:%v", this.Profit, err)
 	}
 	return nil
 }
@@ -59,22 +59,22 @@ func (this *FileProve) Serialize(w io.Writer) error {
 func (this *FileProve) Deserialize(r io.Reader) error {
 	var err error
 	if this.FileHash, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [FileHash] deserialize from error:%v", err)
 	}
 	if this.MultiRes, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [MultiRes] deserialize from error:%v", err)
 	}
 	if this.AddRes, err = utils.ReadBytes(r); err != nil {
-		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [AddRes] deserialize from error:%v", err)
 	}
 	if this.BlockHeight, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [BlockHeight] deserialize from error:%v", err)
 	}
 	if this.WalletAddr, err = utils.ReadAddress(r); err != nil {
-		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [WalletAddr] deserialize from error:%v", err)
 	}
 	if this.Profit, err = utils.ReadVarUint(r); err != nil {
-		return fmt.Errorf("[FileProve] deserialize from error:%v", err)
+		return fmt.Errorf("[FileProve] [Profit] deserialize from error:%v", err)
 	}
 	return nil
 }
