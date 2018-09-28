@@ -115,7 +115,7 @@ func (this *FileInfo) Deserialize(r io.Reader) error {
 }
 
 func (this *FileInfo) Serialization(sink *common.ZeroCopySink) {
-	utils.EncodeBytes(sink, this.FileHash[:])
+	utils.EncodeBytes(sink, this.FileHash)
 	utils.EncodeAddress(sink, this.UserAddr)
 	utils.EncodeVarUint(sink, this.FileBlockNum)
 	utils.EncodeVarUint(sink, this.FileBlockSize)

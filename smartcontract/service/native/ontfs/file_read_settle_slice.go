@@ -88,7 +88,7 @@ func (this *FileReadSettleSlice) Deserialize(r io.Reader) error {
 
 
 func (this *FileReadSettleSlice) Serialization(sink *common.ZeroCopySink) {
-	utils.EncodeBytes(sink, this.FileHash[:])
+	utils.EncodeBytes(sink, this.FileHash)
 	utils.EncodeAddress(sink, this.PayFrom)
 	utils.EncodeAddress(sink, this.PayTo)
 	utils.EncodeVarUint(sink, this.SlicePay)

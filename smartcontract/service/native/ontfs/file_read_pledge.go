@@ -80,7 +80,7 @@ func (this *FileReadPledge) Deserialize(r io.Reader) error {
 }
 
 func (this *FileReadPledge) Serialization(sink *common.ZeroCopySink) {
-	utils.EncodeBytes(sink, this.FileHash[:])
+	utils.EncodeBytes(sink, this.FileHash)
 	utils.EncodeAddress(sink, this.ReadAddr)
 	utils.EncodeAddress(sink, this.FromAddr)
 	utils.EncodeVarUint(sink, this.Id)

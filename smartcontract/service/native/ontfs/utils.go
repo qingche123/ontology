@@ -46,7 +46,7 @@ const (
 	ONTFS_NODE_SET         = "ontfsnodeset"
 	ONTFS_FILE_INFO        = "ontfsfileinfo"
 	ONTFS_FILE_PROVE       = "ontfsfileprove"
-	ONTFS_FILE_READ_PLEDGE = "ontfsfileprove"
+	ONTFS_FILE_READ_PLEDGE = "ontfsfilereadpledge"
 )
 
 func GenFsSettingKey(contract common.Address) []byte {
