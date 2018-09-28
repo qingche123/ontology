@@ -80,6 +80,7 @@ func NativeInvoke(service *NeoVmService, engine *vm.ExecutionEngine) error {
 		Tx:         service.Tx,
 		Height:     service.Height,
 		Time:       service.Time,
+		Store:      service.Store,
 		ContextRef: service.ContextRef,
 		ServiceMap: make(map[string]native.Handler),
 	}
