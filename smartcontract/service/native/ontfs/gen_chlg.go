@@ -57,7 +57,7 @@ func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint32) []PoR.Chal
 		}
 
 		rd := BytesToInt(tmpHash[hashIndex:hashIndex+4])
-		challenge[i-1].Index = (rd +1)%blockNumOfPart + (i-1)*blockNumPerPart
+		challenge[i-1].Index = (rd +1)%blockNumOfPart + (i-1)*blockNumPerPart + 1
 		challenge[i-1].Rand = uint32(blockHash[hashIndex]) + 1
 
 		hashIndex++

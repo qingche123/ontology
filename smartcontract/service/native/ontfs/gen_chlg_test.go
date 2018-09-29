@@ -31,9 +31,7 @@ func TestGenChallenge(t *testing.T) {
 	var hash common.Uint256
 	bt := make([]byte, 32)
 
-
-
-	for fileBlockNum := 120000; fileBlockNum < 128000; fileBlockNum++  {
+	for fileBlockNum := 1; fileBlockNum < 12800; fileBlockNum++  {
 		rand.Seed(time.Now().Unix())
 		rand.Read(bt)
 		copy(hash[:], bt)
@@ -44,9 +42,7 @@ func TestGenChallenge(t *testing.T) {
 		fmt.Println("challenge:", challenge)
 		for i := 0; i < len(challenge); i++  {
 			if challenge[i].Index > uint32(fileBlockNum) {
-
-				fmt.Println("error------------------------")
-				fmt.Println(challenge[i])
+				fmt.Println("error: ", challenge[i])
 				return
 			}
 		}
