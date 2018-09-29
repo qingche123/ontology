@@ -47,6 +47,7 @@ func RegisterFsContract(native *native.NativeService) {
 	native.Register(FS_READ_FILE_PLEDGE, FsReadFilePledge)
 	native.Register(FS_FILE_READ_PROFIT_SETTLE, FsFileReadProfitSettle)
 	native.Register(FS_DELETE_FILE, FsDeleteFile)
+	native.Register(FS_GET_FILE_READ_PLEDGE, FsGetFileReadPledge)
 }
 
 func fsInit(native *native.NativeService) ([]byte, error) {

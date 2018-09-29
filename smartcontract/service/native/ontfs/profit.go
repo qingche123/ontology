@@ -240,6 +240,26 @@ func FsDeleteFile(native *native.NativeService) ([]byte, error) {
 	return utils.BYTE_TRUE, nil
 }
 
+func FsGetFileReadPledge(native *native.NativeService) ([]byte, error) {
+	contract := native.ContextRef.CurrentContext().ContractAddress
+
+	source := common.NewZeroCopySource(native.Input)
+	fileHash, err := utils.DecodeBytes(source)
+	if err != nil {
+		return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileReadPledge DecodeBytes error!")
+	}
+
+	key := GenFsFileReadPledgeKey(contract, fileHash)
+	item, err := utils.GetStorageItem(native, key)
+	if err != nil {
+		return nil, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] FsGetFileReadPledge GetStorageItem error!")
+	}
+	if item == nil {
+		return nil, errors.NewErr("[FS Profit] FileReadPledge not found!")
+	}
+	return item.Value, nil
+}
+
 func getReadFilePledge(native *native.NativeService, fileHash []byte) (*FileReadPledge, error){
 	contract := native.ContextRef.CurrentContext().ContractAddress
 	key := GenFsFileReadPledgeKey(contract, fileHash)
