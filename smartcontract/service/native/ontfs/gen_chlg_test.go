@@ -24,20 +24,32 @@ import (
 	"fmt"
 	"github.com/ontio/ontology/common"
 
+	"time"
 )
 
 func TestGenChallenge(t *testing.T) {
-	bt := make([]byte, 32)
-	rand.Seed(10)
-	rand.Read(bt)
-
 	var hash common.Uint256
-	copy(hash[:], bt)
+	bt := make([]byte, 32)
 
-	for fileBlockNum := 1; fileBlockNum < 128; fileBlockNum++  {
+
+
+	for fileBlockNum := 120000; fileBlockNum < 128000; fileBlockNum++  {
+		rand.Seed(time.Now().Unix())
+		rand.Read(bt)
+		copy(hash[:], bt)
+
 		challenge := GenChallenge(hash, uint32(fileBlockNum), 32)
 		fmt.Printf("==========FileBlockNum: %d, ChallengeLength:%d========\n",
 			fileBlockNum, len(challenge))
-		//fmt.Println(challenge)
+		fmt.Println("challenge:", challenge)
+		for i := 0; i < len(challenge); i++  {
+			if challenge[i].Index > uint32(fileBlockNum) {
+
+				fmt.Println("error------------------------")
+				fmt.Println(challenge[i])
+				return
+			}
+		}
+
 	}
 }

@@ -21,9 +21,14 @@ package ontfs
 import (
 	"github.com/daseinio/dasein-go-PoR/PoR"
 	"github.com/ontio/ontology/common"
+	"bytes"
+	"encoding/binary"
 )
 
 func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint32) []PoR.Challenge {
+	tmpHash := make([]byte, common.UINT256_SIZE + 4)
+	copy(tmpHash, hash[:])
+	copy(tmpHash[common.UINT256_SIZE:], hash[:4])
 	var blockNumPerPart, blockNumLastPart, blockNumOfPart uint32
 
 	if fileBlockNum <= 3 {
@@ -31,17 +36,12 @@ func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint32) []PoR.Chal
 		blockNumLastPart = 1
 		blockNumOfPart = 1
 		proveNum = fileBlockNum
-	} else if fileBlockNum > 3 && fileBlockNum < proveNum {
-		proveNum = (fileBlockNum + 3) / 3
-		blockNumPerPart = (fileBlockNum / proveNum) + 1
-		blockNumLastPart = fileBlockNum % blockNumPerPart
-		blockNumOfPart = blockNumPerPart
-		if blockNumLastPart == 0{
-			proveNum--
-		}
 	} else {
-		blockNumPerPart = fileBlockNum / (proveNum - 1)
-		blockNumLastPart = fileBlockNum % (proveNum - 1)
+		if fileBlockNum > 3 && fileBlockNum < proveNum {
+			proveNum = 3
+		}
+		blockNumPerPart = fileBlockNum / proveNum
+		blockNumLastPart = blockNumPerPart + fileBlockNum % proveNum
 		blockNumOfPart = blockNumPerPart
 	}
 
@@ -52,14 +52,23 @@ func GenChallenge(hash common.Uint256, fileBlockNum, proveNum uint32) []PoR.Chal
 	var i uint32
 
 	for i = 1; i <= proveNum; i++ {
-		if i == proveNum && blockNumLastPart != 0{
+		if i == proveNum {
 			blockNumOfPart = blockNumLastPart
 		}
 
-		challenge[i-1].Index = (uint32(blockHash[hashIndex]) +1)% blockNumOfPart + i*blockNumPerPart
+		rd := BytesToInt(tmpHash[hashIndex:hashIndex+4])
+		challenge[i-1].Index = (rd +1)%blockNumOfPart + (i-1)*blockNumPerPart
 		challenge[i-1].Rand = uint32(blockHash[hashIndex]) + 1
+
 		hashIndex++
 		hashIndex = hashIndex % common.UINT256_SIZE
 	}
 	return challenge
+}
+
+func BytesToInt(b []byte) uint32 {
+	var tmp uint32
+	bytesBuffer := bytes.NewBuffer(b)
+	binary.Read(bytesBuffer, binary.LittleEndian, &tmp)
+	return tmp
 }
