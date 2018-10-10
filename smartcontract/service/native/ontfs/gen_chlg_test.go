@@ -46,6 +46,5 @@ func TestGenChallenge(t *testing.T) {
 				return
 			}
 		}
-
 	}
 }

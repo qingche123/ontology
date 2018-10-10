@@ -229,6 +229,14 @@ func FsDeleteFile(native *native.NativeService) ([]byte, error) {
 		if native.ContextRef.CheckWitness(fileInfo.UserAddr) == false {
 			return utils.BYTE_FALSE, errors.NewErr("[FS Govern] FsDeleteFile CheckWitness failed!")
 		}
+		if fileInfo.Deposit > 0 {
+			state := ont.State{From: contract, To: fileInfo.UserAddr, Value: fileInfo.Deposit}
+			err = appCallTransfer(native, utils.OngContractAddress, state.From, state.To, state.Value)
+			if err != nil {
+				return utils.BYTE_FALSE, errors.NewDetailErr(err, errors.ErrNoCode, "[FS Profit] appCallTransferOnt, ont transfer error!")
+			}
+			ont.AddNotifications(native, contract, &state)
+		}
 		fileInfoKey := GenFsFileInfoKey(contract, fileHash)
 		utils.DelStorageItem(native, fileInfoKey)
 	}
